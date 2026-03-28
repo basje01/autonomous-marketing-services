@@ -1,0 +1,13 @@
+{
+  "name": "frontier-marketing-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomous Marketing Engine for Crypto Projects — Colosseum Frontier Hackathon",
+  "scripts": {
+    "dev": "pnpm --filter gateway dev",
+    "build": "pnpm --filter gateway build",
+    "test": "echo 'No tests yet — Anchor program not built'"
+  },
+  "keywords": ["solana", "ai-agents", "marketing", "paperclip", "x402", "anchor"],
+  "license": "MIT"
+}

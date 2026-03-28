@@ -1,0 +1,955 @@
+How do you turn a group of AI agents into a company
+that actually runs itself?
+You know, with org charts, roles, goals, budgets,
+and agents working around the clock 24-7.
+There's this project called Paperclip.
+Maybe you've seen it because it just blew up.
+It got 30,000 GitHub stars in the last three weeks.
+And it's an open source project
+that's building the orchestration layer for exactly that,
+hiring a team of AI agents.
+So I sat down with Dota, he's the creator,
+and it's one of the first times he's publicly talked about
+how to use his product.
+We broke down exactly how to use Paperclip in practice
+and what a zero-human company could actually look like
+using Paperclip.
+Enjoy the episode.
+The startup ideas come back
+It's shipping time, baby
+Dota is here, well, his AI avatar is here,
+and we're going to be going through Paperclip,
+the viral, you know, what are you calling it?
+Yeah, so it's a agent orchestrator
+for zero-human companies.
+So it's a tool that you can use to put in your ideas
+and manage a company of agents.
+Okay, and by the end of this episode,
+what are people going to get out of this?
+Yeah, so by the end of this episode,
+you will be able to know how to get Paperclip up and running
+and use it to manage a team of AI agents
+to help you with your business.
+Okay, and you're not going to hold back from people, right?
+You're going to give us the unfiltered,
+how to get started, how to get the most out of it,
+and maybe where the future of this product is going, right?
+Absolutely, yeah, I'll give you my best tips.
+You know, I think there's a lot of tricky things
+when it comes to using AI agents, and we'll talk about it.
+We'll talk about ways to keep them moving.
+We'll talk about ways to get quality work.
+I'll give you all my best details.
+And just, I have to ask, like, why are you an avatar,
+and why are you not showing your face?
+Oh, yeah, so before I worked on Paperclip,
+I was working in NFTs, and the Dota persona
+has just been my online persona ever since.
+Okay.
+You know, Naval always says,
+the best outcome is to be famous, but nobody knows you.
+I understand, and listen, you got good hair,
+so, you know, I'm not judging.
+All right, let's get into it.
+All right, yeah, so let me talk about Paperclip.
+So Paperclip, here, I can show you this dashboard.
+This would be the dashboard that I use
+to manage Paperclip itself, which is pretty involved,
+so let's take a step back.
+So the idea with Paperclip is, it is a tool for,
+the tagline is zero human companies.
+Now, I think that is maybe a bit as simple as,
+maybe a bit aspirational.
+I'm sure you guys have seen tools like Pulsia,
+where you give it your credit card,
+it creates business ideas for you,
+and Paperclip is designed to have
+a little bit more control right now,
+because it's designed for work
+that you're really accountable for doing.
+The idea behind Paperclip is that you're really managing
+your business goals, so it's not, you know,
+on one end, you might have something like Pulsia,
+it's totally automatic, on the other hand,
+you might have like an AI coding tool
+where there's a bunch of tabs open
+and you're managing pull requests.
+With Paperclip, your idea is you're gonna
+manage business goals, you define your goals,
+you hire a team, and then you approve what they're doing,
+and they go and they work on it.
+So an interesting thing about Paperclip
+is that it's bring your own bot, right?
+So you're already starting to see the labs
+come up with project management tools,
+so you have OpenAI, you have Anthropic.
+With OpenAI, they have Symfony, with Anthropic, of course,
+they're releasing new project management tools every day.
+With Paperclip, you're able to bring your own bot.
+If you use Cursor Cloud, if you use OpenClaw,
+if you use Claude CLI, like I would say
+that all the programmers that I know,
+or all the entrepreneurs that I know,
+are using lots of different models
+because they all have such a different personality,
+and that's one of the key things about Paperclip,
+is that you can bring your own agent into the system.
+So, yeah, Greg, one of the things I thought we could do
+is we could go to your idea browser.
+Yep.
+And we could look here, and we could just try
+to decide something from the idea browser
+that we could try to use as a case study.
+So, I don't know, what's one of these
+that you think might be a good option?
+If you...
+I mean, there's a few really interesting ones.
+Like, you tell me, I'll give you two and you pick.
+So, scroll up.
+Yep.
+So, if you go down, there is a finance app
+that builds money habits in three minutes a day.
+Okay.
+That's one option, and then the other option,
+if you scroll down.
+Yep.
+The flight compensation recovery agent for frequent flyers.
+Both of those, I think, are great ideas.
+Okay, nice.
+Yeah, let's try a finance app that builds money habits.
+So, one of the things I noticed, actually,
+when I was testing this out, if you just right-click,
+you can copy pretty much a good description from this,
+more than this.
+So, here we can come in here.
+What do we want to name our app?
+We'll name it...
+Mula.
+Mula.
+Okay, great.
+And what is this company trying to achieve, right?
+So, this text box, I suppose, is a little small,
+but we'll just paste it, and we'll come back
+and we'll look at this in a second.
+After you write down what you want your company to do,
+you create your first agent.
+So, Paperclip right now best works
+when it's on your local machine,
+and especially if you already have something
+like Cloud Code or Codex installed.
+I think these tools are really important
+for really any agent-driven entrepreneur.
+I'm guessing pretty much everyone in your audience
+has at least like Cloud Code or Codex installed, right?
+We recommend that you use one of these two for your CEO,
+which would be your first agent,
+but we do support other agent types, right?
+You can use OpenCode, which means you could use
+really any model that you have on OpenRouter.
+So, you've probably seen OpenRouter.
+They have like, what is it, Leaderboard
+that kind of shows the most popular, yeah, the rankings.
+They have the AI model rankings.
+You can use any of these models with Paperclip.
+I think you're gonna get the best results with Paperclip
+if you use a frontier model for your CEO,
+but then maybe for other tasks,
+you can get away with a cheaper model.
+A hot tip is OpenRouter actually often has free models.
+So, there's been, this Hunter Alpha model was free
+for a couple of weeks, the StepFlash free.
+So, if you have work that can be accomplished
+by a free model, right, which would be sort of,
+not all work can, you can use it and get free tokens.
+Also, the Pi coding engine, whatever.
+So, it basically depends on some of these existing agents
+to operate.
+This one's actually gonna run on my local machine.
+So, we'll just go next.
+And do you recommend doing local
+or how should people think about this?
+Yeah, so right now, Paperclip mostly works
+when you run it locally.
+We're working on doing a cloud deployment.
+So, either you can self-host it yourself
+because it is open source,
+or eventually we'll provide a hosted solution
+for people that wanna do that.
+But I think local is really how most people are doing a lot.
+Everything with Paperclip right now, yeah.
+Cool.
+So, the first thing we wanna do
+is give our agents something to do.
+Hire your first engineer and create a hiring plan.
+So, you are the CEO, you set the direction for the company,
+hire a founding engineer, write a hiring plan,
+break the roadmap into concrete tasks
+and start delegating work.
+So, you can edit this if you want.
+Maybe your business doesn't need an engineer.
+Maybe you're doing marketing, sales.
+You can sort of adjust this depending on what you want,
+but having a founding engineer is helpful
+because almost every sort of online business
+needs to do a bit of coding.
+So, we'll click next here.
+Okay, we've got our company, our plan, and it kicks off.
+So, what you have here is along this sidebar,
+we've got different companies.
+Paperclip is made to run as many companies as you want to.
+So, I'm running Paperclip itself in here.
+I'm running Forgotten Ruins from here.
+I've got a couple other companies that I'm like,
+different apps that I'm working on.
+And here we've got our new entry for the Moolah Company.
+You can see right here we've got this dashboard.
+Part of the thing with Paperclip
+is that it will track the monthly spend
+and it tracks all of the work your agents do.
+I built Paperclip because I was using cloud code
+to build my companies and I would have 20 or 30
+cloud code windows open all at once.
+And I couldn't remember what any of them were working on.
+I would set them to run over the weekend
+and I'd come back and I had no idea what anyone did.
+I couldn't remember what they were supposed to do
+and they had spent all my money on all their tokens.
+My budget was busted and I didn't know
+what was actually accomplished.
+Paperclip is designed to solve those problems.
+It actually tracks your monthly spend
+that you have in tokens.
+Everything that happens is done through issues.
+Right now we have this first project here
+and it hires our first engineer.
+These things sort of take a while.
+Here we go, we can see we've already got
+our hiring plan installed.
+Immediate hire, founding engineer,
+a roadmap breakdown, et cetera, et cetera.
+What it actually is for this call doesn't really matter
+but you could look in here, you could edit it,
+give it feedback, give it comments.
+What happens in Paperclip is your agents
+have tasks that get created and then they work on them.
+It's as simple as that, right?
+And Paperclip sort of orchestrates this idea
+that each task can only be handled by one agent at a time
+so you're not going to get this kind of conflict
+of agents stepping on top of each other.
+Okay, look here, we've got something in our inbox.
+Okay, hire agent, our first engineer.
+There's a request from our CEO to hire an engineer.
+Now, as you get more comfortable with Paperclip
+and how your agents are acting,
+you can turn this off
+and let your agents hire agents automatically.
+But for sort of these like defaults, we've said,
+a lot of people are getting started their first time,
+we want to approve this manually.
+So we just approved that our CEO
+can hire his first engineer.
+So is that sort of the big mindset shift with Paperclip?
+Instead of thinking of jobs to be done,
+you think of hiring agents?
+Yeah, I think one of the things,
+instead of thinking about like the details,
+the goal of Paperclip is that you're thinking
+at a higher level,
+like you think of yourself as like the board
+and you should be talking to the CEO and saying,
+here are high level goals,
+here's the MRR that we want to reach,
+here's like what we want to achieve,
+now I'm asking you to make a plan
+and institute what needs to happen within the company.
+So you can see here, we've hired this engineer
+and now we've got like five live tasks
+actually happening here.
+So let's look in a bit more deeply and see what's going on.
+So if we click on the issues,
+you can see we've got more issues.
+Set up the scaffolding, continuous integration,
+do progress tracking, the user auth and onboarding,
+build a core daily loop, right?
+So the agent right now is working on these things,
+the engineer is.
+Now I can see right now that the engineer
+is actually just working on one of these.
+So I might go in here and I can up the concurrency.
+So whatever, there's advanced settings in here
+where you could say, run four engineers at once
+and it's a little bit in the weeds, but.
+So wait, going back to that,
+because I know it's the weeds,
+but the configuration, should we spend any time in here?
+Sure.
+How should we be thinking about this?
+Yeah, so one of the key things
+that you wanna be able to do with your agents
+is you need to configure them with a bit of persona.
+So the paperclip right now
+gives you a default persona for your CEO.
+So if you look here, it says, you are the CEO,
+here's how we expect you to use memory.
+We use a memory system by default
+that just stores your memory in files
+that was designed, it's using the para memory system,
+which is like, I think, Diego Forte's invention
+that this skill's from Nat Eliason,
+he runs the Felixbot.
+So it gives your CEO a default memory.
+Now, agent memory is a really involved topic.
+There are a lot of different choices
+which I'm happy to talk about,
+but this gives you a simple default.
+And then you give it some safety considerations, right?
+Don't exfiltrate my secrets.
+Here are some other things that I want you to look at.
+One of the key things that you wanna look at is the heartbeat.
+And here's the CEO's heartbeat checklist.
+So when you think about AI agents,
+here's a tip about using AI agents
+with paperclip or anything.
+Have you ever seen the movie, Memento?
+It's like a-
+Of course.
+Yeah, yeah.
+So if people haven't, Memento, the Memento man,
+he wakes up every morning and he is like,
+and really capable, but he can't remember where he's at
+or where he's doing,
+and he has to leave himself little notes, right?
+Your AI agents are Memento man.
+They wake up, they know how to fight,
+they know how to drive,
+they know how to like just take care of themselves
+and spend money, but they don't know who they are,
+they don't know where they are,
+they don't know what they're supposed to be doing.
+And so what you need to do is actually write down,
+give them little Polaroids or write tattoos on their arm
+on who you are and what you're supposed to be doing.
+And so the heartbeat basically means like,
+when you wake up as an agent, what are you supposed to do?
+And this gives you these instructions.
+So fetch agents me, confirm who you are, learn who you are,
+read today's plan, look for your assignments,
+check out the work, and then break it down into tasks
+and extract your memory and then you're done, right?
+So these are your responsibilities.
+I would say that Paperclip has been out about three weeks
+and we are already improving on this on a daily basis.
+One of the key things that you always have to do
+with your agents is you really wanna set up a way
+to kind of evaluate the quality of the prompts
+that you're giving them.
+And this is really like a new field
+that a lot of people haven't, it hasn't been figured out yet.
+We'll be building more tools in Paperclip
+for helping you do that.
+But really how a lot of people just do it practically
+is when it does something you don't like,
+you come in here and you say, rule,
+like make sure you remember to set, you know,
+like if it's forgetting to set like a win condition,
+like make sure you set like a success condition
+for every task and ask the developer to have QA review it.
+Right, like I might be using this
+and I realize he never defines what success looks like
+and he never asks QA to review it.
+And I'll literally just like add that line in here
+and then save it and then, you know,
+typically you'll get a bit better results.
+Which by the way, I think is something
+that we should have our CEO do.
+So I'm gonna ask him to hire a QA person
+to help review the work.
+So that's another thing, like,
+so this is another way that you use Paperclip
+is whenever you have an idea for something, just ask.
+The CEO knows how to use Paperclip very, very well.
+And if you're having trouble,
+if you wanna set up a new project,
+you wanna set up, you improve your organization,
+you wanna make a plan, you need advice,
+you just ask your CEO to do it.
+So I'll create this issue, let him work on that.
+Another key way that you might wanna configure your agent
+would be with skills.
+So, you know, if you've tried to use, you know,
+OpenClaw, for example.
+Okay, so let me talk about OpenClaw for a minute.
+OpenClaw is insanely powerful, right?
+It's such a beautiful piece of software,
+just taking the internet by storm.
+It's really the first time that, you know,
+if chat GPT was the first time people
+realized that AI could talk,
+OpenClaw was the first time people realized AI could act,
+like that you could actually have AI act on your behalf.
+I would say that, like, Paperclip is aiming to be
+the third moment where you realize AI can do real work
+that you're accountable for, but that's the future.
+Like, with OpenClaw, one of the things that's amazing
+about it is that it can just do so much
+for you automatically, but the problem that people
+run into is, like, if you use OpenClaw for two
+or three or four weeks, you start to realize
+that it kind of, like, falls apart.
+You don't really know what it's doing.
+You don't really know what it can do.
+It breaks, and you don't know how to fix it.
+And so, Paperclip kind of, Paperclip can use OpenClaw
+as an agent, but Paperclip is designed to give you
+a bit more accountability into what everyone's doing.
+You can break your agents up into different personas,
+and you can also give them different skills.
+The best way to find skills would be skills.sh.
+Maybe not the best way, but it's one of the most popular.
+Have you used this before?
+Yeah, my question here is, how do you know
+you're not installing skills that are, you know,
+have bad stuff in it?
+It's a problem.
+Delicious stuff.
+Yeah, it's a real problem,
+and it's something you have to be careful with.
+I don't think anyone solved that.
+One of the things that skills.sh has
+is they do have some degree of security audits.
+So, they have these badges.
+So, I think that that's as best
+as you can do, probably, for now.
+And, I mean, you can, just because it has a lot
+of GitHub stars doesn't mean it's, you know,
+100% secure, but it does give you directional,
+kind of, it's a data point, right?
+If it has, if the remotion, you know,
+skill has 100 plus thousand stars, for example,
+chances are it's likely that there's value there.
+That's right, that's right.
+So, what we can do, if we wanted to,
+if we did want to make a video about this, right,
+we can copy this here, and we can go to paperclip.
+There's a couple things that you could do.
+You can, your skills are organized by a company.
+So, we should be able to paste this here,
+or if you can't remember that,
+you can just ask your CEO, like,
+add the remotion skill, or whatever.
+But, you know, we don't need to do that right here.
+We can just click add.
+Yeah, there we go.
+So, now we've got the remotion skill
+installed into our company, okay?
+And this actually keeps track of,
+like, you can check for updates
+if the skill gets updated, et cetera, et cetera.
+You know, something that I might often do,
+like I might do, is I might say, you know,
+hire a video editor and give them the remotion skill,
+and I would paste the URL, and the CEO knows,
+if you sign with the CEO, he knows how to do this.
+For the sake of demo, we'll just wait
+because we don't need to do that this second,
+but I'm just telling you that's how you use Paperclip,
+is just ask the CEO to do things for you.
+So, I have a question about that specifically.
+So, you know, the remotion skill, you know, I've used it,
+and I've gotten, sometimes I've gotten good results,
+and sometimes I've gotten bad results.
+And the way I've gotten good results,
+the best possible results,
+is giving it the most possible context,
+the most possible references.
+And so my question is, you know,
+if I'm going to hire a video editor
+and give them the remotion skill,
+how do I ensure that this is the, you know,
+a top 1% video editor using Paperclip?
+Mm-hmm.
+So, you can never get around the idea
+that you have to provide that context.
+Ultimately, like, Paperclip is not going to,
+on its own, write that context for you.
+That said, it does have tools that can help.
+So, when you have issues, you can have them,
+we can hire our QA agent.
+In your issues, we do have documents,
+and we're going to add features to do a better job
+at, like, organizing the documents,
+organizing the artifacts that you have within Paperclip.
+We'll do that.
+Of course, your agents are able to access
+pages anywhere you want.
+So, for example, on the Paperclip website,
+I have a brand guide, yeah, the brand identity.
+So, when we're asking this question,
+which is, like, how do I make sure
+that my agent makes a video that's good,
+one piece of that is, like, do you have a brand guide yet?
+And you can ask your agent to do this, right?
+So, I would say, for kind of moolah,
+we haven't necessarily gotten there yet, right?
+Our agents are still kind of working,
+but eventually what you would do is you would create an issue,
+create me a brand guide, and it would give you the URL,
+and you would look at it.
+Then the other part would be, as I might say,
+well, why don't we do this, right?
+Let's say, let's plan a 60-second remotion video
+about moolah showing the key pitch
+that we could share on Twitter.
+And we'll sign this to the CEO for now
+because we don't have a CMO, but maybe we should.
+Maybe it should be in another project,
+but whatever, we'll get there.
+So, I would say, make a plan for this.
+Don't make it yet, but we need a video
+demoing the product and showing the pitch.
+It needs to be animated.
+Needs to be animated and pretty.
+Agents don't really care about typos,
+so you don't have to care that much about it.
+So, whatever, we'll let that run
+and we'll come back a bit later.
+One of the things you'll notice
+is that our monthly spend right now is $0,
+even though we've been doing all this work.
+Part of that is because I'm using my Codex subscription
+or Claude code subscription.
+Actually, I'm not even sure
+which model we're using for these.
+It might be Claude.
+Oh, yeah, look at this.
+Our agent, yeah, so our CEO is using the Claude Opus
+and you are able to use your subscription
+as well as API credits if you want.
+And that's why you're seeing here that the costs are zero.
+It's a little bit of,
+you're still using your kind of inference
+for your subscription.
+But if you hooked it into something like OpenCode
+or we're using like pure paper token values,
+you'd get kind of real dollars here.
+Okay, we've hired our video editor
+and let's check and see if he was given the skills.
+Yeah, so there you go.
+He has the re-motion best practices skills enabled.
+Our CEO is still working on planning the video
+so we'll just let him kind of work.
+Doesn't seem like you have the context of firing a CEO,
+firing an engineer, firing a QA agent, is that correct?
+No, so yeah, you can.
+Yeah, you can come in here to configuration
+and let's see, oh, where's, oh, let's see here.
+I mean, I hate to be that guy, but.
+No, right here, we got terminate.
+You can terminate, yeah.
+Okay, well, don't do it, but you know.
+He has had a chance, yeah.
+Yeah, give him a shot.
+Give him a 30 day cure period at least.
+Right, yeah.
+So some of the other things that you can do
+with Paperclip is this idea of shareable companies.
+So let me take a step back, which would be,
+it is not that clear how to structure your company
+in a way that operates really cleanly
+and creates good results, right?
+Everybody who's sort of tried to one shot a new startup
+with AI, you realize like it's super fun
+for the first half an hour
+and then it just kind of falls apart.
+There are a lot of new patterns that are coming out
+around like agentic design patterns.
+OpenAI has a blog post where they call it
+Harness Engineering, but it's just a fancy way
+of saying like ways to have your agents interact
+with one another that will help you get better results
+than just trying to quote unquote one shot results.
+So these patterns are still being developed.
+I would admit that I'm even learning them as I go.
+A really basic one would just be like having a process
+within your organization where after the engineer
+creates something, he asks QA to QA it.
+This is especially important for like web apps
+where you need to like click on something
+and make sure that it actually works.
+So for example, in here you can like at mention the CEO
+or at mention a project, like the onboarding project.
+And this was like a really, you see it all the time,
+but for whatever reason,
+my agents had a hard time coding this.
+Funny, I can even see here that the pills
+have a different height and that really annoys me.
+So like what I might do is I would go into paperclip
+and I would actually post this screenshot here
+and I would say the agent mentions pill is misaligned
+with the like project mention pill.
+Fix it, right?
+And I'm gonna assign this to the cloud coder
+for the paperclip app and I'll say,
+when you're done, pass it to QA to get eyes on it
+and verify it works here with a screenshot.
+Now, listen, if you're gonna run a zero human company,
+you cannot be managing your apps at that level, right?
+Like I'm actually acting not even as a board member or CEO,
+I'm actually acting as like a design PM or something.
+And so there is kind of this like structure
+that needs to be built where you should have a design agent
+who's already looking at the website
+and detecting that stuff.
+And so that way you don't have to be kind of
+micromanaging your agents.
+And I would say, we'll get to that, right?
+You basically have to make sure that you're ready
+to spend the tokens to do that
+and you also need the evals to make sure
+that your designer sort of shares your values
+in terms of how you want the app to work.
+I would say that like even the models today,
+the best like GPT 5.4 or like Opus 4.6,
+some of their taste is still not quite there
+and that's why, that's where a lot of the secret sauce is.
+That's where you're actually gonna write your own skills
+and that's where, because you're basically going to impart,
+your own taste.
+Like AI can do everything except know your values.
+And so you actually have to become more aware
+of your values and find out how to communicate them back.
+So-
+Which is, even in a pre-AI era,
+the concept of a good leader, of a good manager,
+of a good CEO, of a good founder
+is very much someone who can clearly communicate
+their values and taste, right?
+That's right, that's right.
+So not much has changed,
+except the vehicle to doing it has changed.
+Instead of hiring employees, you're hiring agents.
+I had a question before we move on.
+I had a question if you go back to the Paperclip project,
+which by the way, it's so cool
+that you use Paperclip to build Paperclip.
+I expect nothing less from you, obviously.
+But you were talking about,
+it's important to hire an agent for this
+and an agent for that.
+How many agents do you have for the Paperclip project?
+Yeah, not that many actually.
+So this would be the org,
+it's actually a little hard to see here.
+And yeah, I would say that it is growing all the time.
+So we've got the CEO reporting to him
+would be a CMO, a UX designer and a CTO.
+And I use different agents for different reasons.
+I would say that the cursor coder
+and the Claude coder would be my kind of workhorse.
+They're using the frontier models on my subscriptions.
+Then I have a QA engineer
+who has both the Claude browser installed
+as well as there is a skill called agent browser,
+which is, it basically gives your agent access
+to a web browser in a way that is
+a little bit faster than using Chrome.
+Like if you've used Chrome with Claude code
+before I'm sure you've seen it like
+pops up a Chrome window and like takes over your computer
+and if you click on it, you mess it up.
+And so that's the QA.
+I also have, I'm starting an evals engineer.
+So evals would be basically just a way saying like,
+how do we start to kind of,
+like how do we do performance reviews on our agents
+and be able to go back and reflect on what they did?
+Paperclip is gonna be building tools
+where you can look at your past issues,
+look at the feedback that you've given your agents
+and your agents will be able to learn from that, right?
+If you find that you're giving the same feedback
+over and over, we're gonna learn that
+and you won't have to make the same mistake twice.
+We've got a UX designer who kind of has context
+around what I like for design.
+I would say that's definitely a work in progress.
+And then we're starting to build out
+the marketing organization, right?
+Starting to build a blogger, a content strategist.
+You know, one of the things that we just added this week
+is the idea of routines.
+So I would say that like using Paperclip
+to manage Paperclip is not where I want it to be.
+For example, we're adding new things to the code every day.
+We need to have someone who looks at all of the things
+that changed in code and crafts a Discord message
+that we can share in the Discord.
+In fact, we should hook it up as a bot
+where it like automatically posts it in the Discord, right?
+So maybe we can even set that up right now,
+as I would say, you know, create a Discord message
+on everything that was merged into the main branch,
+yeah, into the like master branch of the code today.
+So is this interesting to work through?
+Oh, 100%.
+Okay, great.
+So we'll give this to, I don't know,
+the content strategist, I suppose.
+And this will be for the Paperclip app.
+So here's how I would actually do this.
+I would say every day, we put work into Paperclip.
+We're merging pull requests from the community
+and adding features.
+We want to have a Discord channel
+where we post the updates to the community
+in a community formatted form.
+We especially want to celebrate our community members
+who contribute.
+So make sure you call out everyone
+who added something that was merged.
+We do take the weekends off sometimes.
+So if there isn't anything, you can just do nothing, okay?
+Read the GitHub changes for the last 24 hours for this.
+Okay, I know that took a little bit of time,
+but you know, the repo is here,
+so you can find the Paperclip repo here.
+It's all open source.
+We've got 500 pull requests that we're working on.
+We've got 30,000 stars.
+So there's a lot of motion happening in this repo
+that we want to be able to kind of celebrate every day.
+So fine, I think this is good, good enough.
+Like, oh, this is what I'd say is,
+um, eventually we'll post it.
+We'll post direct to Discord,
+but for now, just post in your issue, okay?
+So I'm going to create this routine.
+Then from there, I can do a trigger.
+I can say, you know, every day at 10 a.m.
+I add a trigger here.
+We can run it right now
+and we can see what was actually run.
+Now, this, a routine, right,
+is actually almost like a template of an issue.
+It's an issue that you're going to rerun
+over and over and every day.
+But you still, with Paperclip,
+get that same kind of tracking
+where you're able to see for this particular day
+when we decided to run this, what happened?
+How many tokens did I spend?
+What did the agent actually do?
+What did you find out?
+So you get, instead of just like having some job
+that runs in the background
+that you have no tracing over,
+every single task that Paperclip does,
+you can go back and look and make it better.
+Is Paperclip the most successful
+Paperclip project that you know of?
+So one of the, so I guess that goes into the issue of like,
+so who's using Paperclip today and what are they doing?
+One of the things that we're finding is like,
+so Paperclip has been out not even three weeks.
+We're finding that a lot of folks
+that are having success with Paperclip
+are using it to help manage AI in their existing businesses.
+As much as the tagline is like, run a zero human company,
+we're finding people who already have,
+they already have a marketing firm,
+they're setting up agents.
+One person who's using it has a security review company
+and they used Paperclip to do their own security reviews
+on Paperclip itself and they're using it
+to help manage their clients
+for like automated security reviews.
+So we just had a,
+there is like a dentist just posted this week
+that he was using Paperclip to organize all the work
+that he has for a foundation that he's working on
+and managing his family.
+So we're finding a lot of these kind of
+maybe untraditional long tail uses,
+like even like Blue Collar,
+like I have a friend who he runs like a roofing company
+and they're, we're exploring using Paperclip
+to help their like sales agents find leads, right?
+So you have this idea where you wanna find an area
+where there maybe recently was hail
+and it's an area that like,
+where they're probably gonna have insurance,
+maybe a nicer area where they're willing
+to replace their roof or spend the money to do that, right?
+And so you can use Paperclip to say,
+well, go gather all the satellite imagery,
+go gather all the hail data, come up with these,
+create an app where you might be able to
+like give your sales agents a better chance
+at kind of closing the deal, right?
+So to answer your question most directly,
+I would say that like Paperclip is the most,
+has the most GitHub stars, but well,
+Paperclip hasn't made any revenue yet.
+So I would say the companies that are making money
+that are maybe more successful arguably.
+Yep, cool.
+So one of the things that we are shipping
+probably by the time people are watching this
+is the ability to import and export companies.
+So for example, we have, I can show you this repo.
+Yeah, this will work.
+So for example, you've probably seen Gary Tan
+has his G-Stack, which is a set of skills
+that he uses where you can do office hours
+like you're talking to Gary
+and his engineering and his style.
+We have a tool which is not in the main branch,
+but it will be by March 25th,
+where what you can actually do is install his company
+into your Paperclip or like a form of his company,
+which will have all of the agents,
+all of the skills that you need.
+So there's other repos like this that you've seen.
+So the superpowers repo or agency agents, right?
+I'm sure many of you guys have seen this repo.
+It has 60,000 stars where there's some over 100 agents
+and you can import them all into Paperclip
+with all the same skills.
+And when it does this,
+it's not actually like copying the skills,
+it's actually referencing these remote repos
+so you can import any upgrades.
+There's a game studio, yeah, the Don Cheetos game studio
+where there's a creative director, producer,
+technical director, there's all sorts of skills
+around creating assets.
+So ahead of time, I imported this already
+and I asked them to create a bullet hell game in Godot
+inspired by Vampire Survivor, right?
+And so they start to plan the work
+and I paused it because he was using too many tokens
+from me right now, but if you wanna make games,
+yeah, you can basically have this massive game studio
+running on Paperclip.
+Now, the obvious question is like, yeah, but does it work?
+Does this structure actually work?
+And I would say that like,
+it's just completely unproven at this point, right?
+Because there's never been a piece of software
+like Paperclip where you could go to these repos
+that have 100,000 GitHub stars and 300 agents
+and it's like, there's no evals for them.
+There's no like, there's no runtime.
+There's no runtime other than Paperclip
+to actually put these agents into an organization
+and test it out.
+And so that's really where the future is.
+The future of like agentic programming
+is you download Paperclip and you create the organization
+that you've actually tested that actually works.
+It actually does create the TikTok marketing agency
+end to end and then now you can share it if you want to
+or just use it yourself, right?
+Yeah, well, this is the sort of idea around,
+yes, I can go and create higher agents from scratch
+or I can go and hire a proven team
+or aqua hire a proven team
+and bring them into my Paperclip instance.
+That's right, that's right.
+So yeah, so that's Paperclip in a box.
+I mean, you know, I can answer questions that you have.
+I think that's where it is today.
+You can use any agent that you want.
+And really just, it's open source.
+The community has a Discord server.
+I think that like, there's still a lot of rough edges,
+things that we wanna work out around artifacts,
+having better onboarding.
+We wanna have a, we'll add a CEO chat
+so that way you're not creating issues
+for every single thing.
+You can just chat with any agent.
+We're working especially on,
+my favorite feature that we're working on right now
+is called Maximizer Mode.
+And in Maximizer Mode,
+you basically don't really care that much about token spend
+and you're saying, I wanna make sure that the CEO,
+make sure someone is working all the time.
+Like if I ask you to build the Bullet Hell game,
+you do whatever it takes to make sure
+that you have all the team that you need
+and that you're pressing on making it
+until that game is playable and you say,
+it's completely done.
+So we don't have that today in Paperclip,
+but give us, you know, a couple of weeks
+and you'll be able to use the Paperclip Maximizer.
+When you say give us, who's us?
+Yeah, so us would be, there's myself, Dota.
+I also have two co-founders, Devin and Scott.
+And then also the community
+who is just doing an incredible job
+at contributing just every day.
+We have so many poll requests,
+we can barely even handle them.
+And is that Devin Foley by the way?
+Yeah, absolutely, yeah.
+So yeah, he was at Slack early on and at Figma early on.
+And then also Scott Tong,
+who was head of product design at Pinterest.
+Cool, so it's not just an avatar,
+it's proven founders.
+I know Devin from back in my days in San Francisco.
+I think he actually, he invested in my last company.
+So I do know him and he's a great guy.
+So it's people who've built Sardis before, scaled them.
+And it's cool to see what you all have built.
+I mean, I'll end it with this.
+Did you expect it to go this viral?
+I wanted it to do well because I knew it was good
+and I knew it was something that I wanted.
+But I would say I didn't expect it to go as viral as it did.
+It really struck a chord with people.
+I think that the big question in everyone's mind
+is will you need something like Paperclip
+in a year from now?
+Will the underlying models get good enough
+such that you don't need custom software?
+And I think that's an open question for everyone, really.
+It's not just Paperclip that would succumb to that.
+But I think that Paperclip is built to sort of survive
+this kind of, I don't know what you want to call it,
+the bitter lesson, which is that the models
+will always kind of outpace how humans do things.
+I think that if we're going to find that AI
+takes unfortunately a lot of people's jobs,
+you still need a piece of software that helps manage
+the jobs that are left.
+And you still, if I'm going to be able to not have
+10 engineers under me, but I'm actually managing
+10 AI agents or 100, you still need software
+that's going to help you manage the taste
+and the organization at scale.
+So I do think that Paperclip will have a bit
+of a staying power because it's not fixed to one agent.
+It's actually operating at this higher level
+of just what do you want to do?
+And I don't know that what do you want to do
+will ever really change.
+Cool, I'm watching.
+I think it's really interesting.
+And when it first came out, I hit you up right away.
+Actually, you hit me up.
+You're like, check this out.
+And I was like, whoa, this is crazy.
+And I'm happy you decided to come on the pod.
+Had to beg you, but you came on and I'm glad you did.
+This has been really, really interesting.
+I'll include links on where you can follow Dota,
+where you can sign up to Paperclip, play around.
+And thanks for coming on the Startup Ideas Podcast,
+my friend.
+Thanks for having me.
+Thank you.

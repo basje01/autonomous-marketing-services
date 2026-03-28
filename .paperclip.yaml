@@ -1,0 +1,55 @@
+schema: paperclip/v1
+
+agents:
+  marketing-strategist:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-opus-4-6
+        maxTurnsPerRun: 25
+        timeoutSec: 900
+    inputs:
+      env:
+        COLOSSEUM_COPILOT_PAT:
+          kind: secret
+          requirement: required
+
+  chief-of-staff:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 20
+        timeoutSec: 600
+
+  seo-agent:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 25
+        timeoutSec: 900
+
+  content-agent:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 25
+        timeoutSec: 900
+
+  social-agent:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 20
+        timeoutSec: 600
+
+  community-agent:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 20
+        timeoutSec: 600

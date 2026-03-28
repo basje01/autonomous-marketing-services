@@ -1,0 +1,6 @@
+{
+  "projectName": "SolPay",
+  "description": "A decentralized payment gateway for Solana that lets merchants accept USDC, SOL, and SPL tokens with instant settlement and sub-cent fees. Built for e-commerce integrations with Shopify, WooCommerce, and custom checkout APIs.",
+  "targetAudience": "Crypto-native e-commerce merchants and SaaS businesses on Solana who want to accept stablecoin payments without intermediaries. Technical founders who value decentralization, low fees, and programmable payment flows.",
+  "website": "https://solpay.example.com"
+}
