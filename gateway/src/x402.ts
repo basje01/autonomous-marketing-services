@@ -3,6 +3,7 @@ import { ExactSvmScheme } from "@x402/svm/exact/server";
 import { SOLANA_DEVNET_CAIP2, SOLANA_MAINNET_CAIP2 } from "@x402/svm";
 import { paymentMiddlewareFromConfig } from "@x402/express";
 import type { SchemeRegistration } from "@x402/express";
+import { HTTPFacilitatorClient } from "@x402/core/server";
 import { config } from "./config.js";
 
 /**
@@ -42,11 +43,14 @@ export function createX402Middleware() {
     ? SOLANA_MAINNET_CAIP2
     : SOLANA_DEVNET_CAIP2) as `${string}:${string}`;
 
-  // Routes config — Record<"METHOD /path", RouteConfig>
-  const routes = {
+  // Routes config with explicit type
+  const routes: Record<string, {
+    accepts: { scheme: "exact"; network: `${string}:${string}`; payTo: string; price: string };
+    description: string;
+  }> = {
     "POST /api/deploy-marketing-team": {
       accepts: {
-        scheme: "exact" as const,
+        scheme: "exact",
         network,
         payTo: platformAddress,
         price: priceUsdc,
@@ -63,13 +67,19 @@ export function createX402Middleware() {
     },
   ];
 
-  console.log(`[x402] Platform wallet: ${platformAddress}`);
-  console.log(`[x402] Campaign price: ${priceUsdc} USDC on Solana ${config.solanaNetwork}`);
+  // Facilitator client — uses configured URL instead of SDK default
+  const facilitatorClient = new HTTPFacilitatorClient({
+    url: config.x402FacilitatorUrl,
+  });
 
-  // Create middleware — handles 402 responses and payment verification automatically
+  console.log(`[x402] Platform: ${platformAddress.slice(0, 8)}...`);
+  console.log(`[x402] Price: ${priceUsdc} USDC on Solana ${config.solanaNetwork}`);
+  console.log(`[x402] Facilitator: ${config.x402FacilitatorUrl}`);
+
+  // Create middleware — handles 402 responses and payment verification
   const middleware = paymentMiddlewareFromConfig(
     routes,
-    undefined,    // uses default CDP facilitator
+    facilitatorClient,
     schemes,
   );
 

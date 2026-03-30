@@ -18,6 +18,9 @@ export const config = {
     parseFloat(process.env.CAMPAIGN_PRICE_USDC || "5") * 1_000_000
   ),
 
+  // Campaign
+  deliverablesExpected: parseInt(process.env.DELIVERABLES_EXPECTED || "5", 10),
+
   // Paperclip
   paperclipApiUrl: process.env.PAPERCLIP_API_URL || "http://localhost:3100",
 

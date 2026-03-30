@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { config } from "./config.js";
 import { createCompany, hireAgents, createInitialTask, AGENT_ROLES } from "./paperclip-client.js";
 import { initializeCampaign } from "./escrow-client.js";
@@ -8,8 +9,24 @@ import crypto from "node:crypto";
 const app = express();
 app.use(express.json({ limit: "10kb" }));
 
+// Rate limiting — 5 deploys per minute, 30 reads per minute
+const deployLimiter = rateLimit({ windowMs: 60_000, max: 5, standardHeaders: true, legacyHeaders: false });
+const readLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false });
+
 // x402 payment gate — returns 402 for unpaid requests to protected routes
 app.use(createX402Middleware());
+
+// Simple in-memory idempotency store (campaignId → response)
+// In production: use Redis or database
+const idempotencyStore = new Map<string, { status: number; body: unknown; expiresAt: number }>();
+
+// Clean expired entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of idempotencyStore) {
+    if (val.expiresAt < now) idempotencyStore.delete(key);
+  }
+}, 5 * 60_000);
 
 /**
  * Health check — reports gateway status only, no internal URLs exposed.
@@ -31,11 +48,19 @@ app.get("/api/health", (_req, res) => {
  *   4. Assign initial strategy task to Marketing Strategist
  *   5. Return company dashboard URL
  *
- * The x402 middleware intercepts this route. If the client has not paid,
- * it returns 402 Payment Required with pricing details. Only paid requests
- * reach this handler.
+ * Protected by x402 (payment required) + rate limiting + idempotency.
  */
-app.post("/api/deploy-marketing-team", async (req, res) => {
+app.post("/api/deploy-marketing-team", deployLimiter, async (req, res) => {
+  // Idempotency — return cached response if same key seen before
+  const idempotencyKey = req.headers["x-idempotency-key"] as string | undefined;
+  if (idempotencyKey) {
+    const cached = idempotencyStore.get(idempotencyKey);
+    if (cached) {
+      res.status(cached.status).json(cached.body);
+      return;
+    }
+  }
+
   const campaignId = crypto.randomUUID();
 
   try {
@@ -70,12 +95,11 @@ app.post("/api/deploy-marketing-team", async (req, res) => {
 
     // Step 1: Initialize escrow on Solana
     console.log(`[gateway] Initializing campaign escrow: ${campaignId}`);
-    const deliverablesExpected = AGENT_ROLES.filter(r => r.role !== "CEO").length;
     await initializeCampaign({
       platformAddress,
       campaignId,
       budgetUsdcMicro: config.campaignPriceUsdcMicro,
-      deliverablesExpected,
+      deliverablesExpected: config.deliverablesExpected,
     });
 
     // Step 2: Create Paperclip company
@@ -104,7 +128,7 @@ app.post("/api/deploy-marketing-team", async (req, res) => {
     });
 
     // Step 5: Return result
-    res.json({
+    const responseBody = {
       success: true,
       campaignId,
       company: {
@@ -118,7 +142,18 @@ app.post("/api/deploy-marketing-team", async (req, res) => {
         identifier: task.identifier,
       },
       message: `Autonomous marketing team deployed for ${projectName}. ${agents.length} agents hired and strategist is beginning research.`,
-    });
+    };
+
+    // Cache for idempotency (1 hour TTL)
+    if (idempotencyKey) {
+      idempotencyStore.set(idempotencyKey, {
+        status: 200,
+        body: responseBody,
+        expiresAt: Date.now() + 60 * 60_000,
+      });
+    }
+
+    res.json(responseBody);
   } catch (error) {
     // Payment was already settled by x402 — log for manual reconciliation
     const errorId = crypto.randomUUID();
@@ -136,7 +171,7 @@ app.post("/api/deploy-marketing-team", async (req, res) => {
 /**
  * List active campaigns (proxy to Paperclip companies API)
  */
-app.get("/api/campaigns", async (_req, res) => {
+app.get("/api/campaigns", readLimiter, async (_req, res) => {
   try {
     const paperclipRes = await fetch(`${config.paperclipApiUrl}/api/companies`, {
       signal: AbortSignal.timeout(10_000),
