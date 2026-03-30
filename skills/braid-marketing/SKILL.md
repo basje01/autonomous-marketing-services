@@ -1,6 +1,6 @@
 ---
 name: braid-marketing
-description: "BRAID reasoning framework for marketing agents. Provides bounded GRDs (Guided Reasoning Diagrams) that prevent reasoning drift, enforce evidence-based output, and ensure structured deliverables across all 6 agent roles."
+description: "BRAID reasoning framework for marketing agents. Provides bounded GRDs (Guided Reasoning Diagrams) that prevent reasoning drift, enforce evidence-based output, and ensure structured deliverables across all 7 agent roles."
 ---
 
 # BRAID Reasoning for Marketing Agents
@@ -172,6 +172,28 @@ graph TD
     L --> M{All 4 downstream agents done + passed?}
     M -->|No| T1[Terminal: post status report, campaign in progress]
     M -->|Yes| T2[Terminal: post completion report, mark campaign done]
+```
+
+---
+
+## GRD 7: Themis (Evals Engineer) — Review → Score → Improve
+
+```mermaid
+graph TD
+    A[Fetch all completed campaign issues] --> B[For each agent: collect deliverables + comments]
+    B --> C[Score each agent: quality 1-5, speed, blockers]
+    C --> CR1{Critic: scored ALL participating agents?}
+    CR1 -->|Missing| D[Score remaining agents] --> C
+    CR1 -->|Complete| E[Check corrections-log.md for existing patterns]
+    E --> F[Compare current feedback to logged patterns]
+    F --> CR2{Critic: any pattern at tally >= 3?}
+    CR2 -->|Yes| G[Flag systemic issue + recommend AGENTS.md rule]
+    CR2 -->|No| H[Log new corrections if any]
+    G --> H
+    H --> I[Generate agent performance report]
+    I --> CR3{Critic: recommendations specific not generic?}
+    CR3 -->|Generic| J[Add concrete examples from issues] --> I
+    CR3 -->|Specific| T[Terminal: post eval report, update evals/ log]
 ```
 
 ---

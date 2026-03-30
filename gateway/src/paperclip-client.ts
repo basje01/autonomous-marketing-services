@@ -1,8 +1,26 @@
+import { z } from "zod";
 import { config } from "./config.js";
 import { createCompanyResponseSchema, createAgentResponseSchema, createIssueResponseSchema } from "./schemas.js";
 import { ExternalServiceError } from "./errors.js";
 
 const API = config.paperclipApiUrl;
+
+const companyListSchema = z.array(z.object({
+  id: z.string(),
+  name: z.string(),
+  status: z.string().optional(),
+}).passthrough());
+
+/**
+ * List all companies (campaigns) from Paperclip.
+ */
+export async function listCompanies() {
+  const res = await fetch(`${API}/api/companies`, {
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!res.ok) throw new ExternalServiceError("paperclip", "Failed to list companies");
+  return companyListSchema.parse(await res.json());
+}
 
 /**
  * Create a new Paperclip company for a marketing campaign.
@@ -99,47 +117,60 @@ export const AGENT_ROLES = [
 const agentsDir = new URL("../../agents", import.meta.url).pathname;
 const skillsDir = new URL("../../skills", import.meta.url).pathname;
 
+async function hireOne(companyId: string, role: typeof AGENT_ROLES[number]) {
+  const res = await fetch(`${API}/api/companies/${companyId}/agents`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(30_000),
+    body: JSON.stringify({
+      name: role.name,
+      title: role.title,
+      monthlyBudget: role.monthlyBudget,
+      adapterType: "claude_local",
+      adapterConfig: {
+        command: "claude",
+        cwd: agentsDir,
+        instructionsFilePath: `${agentsDir}/${role.instructionsFile}/AGENTS.md`,
+        model: role.model,
+        maxTurnsPerRun: role.maxTurns,
+        timeoutSec: role.timeoutSec,
+        args: ["--add-dir", skillsDir, "--permission-mode", "acceptEdits"],
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    throw new ExternalServiceError("paperclip", `Failed to hire ${role.name}: ${res.statusText}`);
+  }
+
+  const agent = createAgentResponseSchema.parse(await res.json());
+  console.warn(`[paperclip] Hired ${role.name} (${agent.id})`);
+  return agent;
+}
+
 /**
- * Hire all 7 marketing agents into a Paperclip company.
- * Throws if Minerva (CEO) fails to hire.
+ * Hire all 7 marketing agents. Minerva (CEO) first, then ICs in parallel.
+ * Throws if Minerva fails. IC failures are logged but don't block deploy.
  */
 export async function hireAgents(companyId: string) {
-  const agents: Array<{ id: string; name: string }> = [];
+  const ceo = AGENT_ROLES.find((r) => r.role === "CEO");
+  const ics = AGENT_ROLES.filter((r) => r.role !== "CEO");
 
-  for (const role of AGENT_ROLES) {
-    const res = await fetch(`${API}/api/companies/${companyId}/agents`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(30_000),
-      body: JSON.stringify({
-        name: role.name,
-        title: role.title,
-        monthlyBudget: role.monthlyBudget,
-        adapterType: "claude_local",
-        adapterConfig: {
-          command: "claude",
-          cwd: agentsDir,
-          instructionsFilePath: `${agentsDir}/${role.instructionsFile}/AGENTS.md`,
-          model: role.model,
-          maxTurnsPerRun: role.maxTurns,
-          timeoutSec: role.timeoutSec,
-          args: ["--add-dir", skillsDir, "--permission-mode", "acceptEdits"],
-        },
-      }),
-    });
+  if (!ceo) throw new ExternalServiceError("paperclip", "No CEO role defined");
 
-    if (!res.ok) {
-      const msg = `Failed to hire ${role.name}: ${res.statusText}`;
-      if (role.role === "CEO") {
-        throw new ExternalServiceError("paperclip", msg);
-      }
-      console.error(`[paperclip] ${msg} — continuing with remaining agents`);
-      continue;
+  // CEO must succeed
+  const minerva = await hireOne(companyId, ceo);
+
+  // ICs in parallel — failures logged, don't block
+  const results = await Promise.allSettled(ics.map((role) => hireOne(companyId, role)));
+  const agents = [minerva];
+
+  for (const [i, result] of results.entries()) {
+    if (result.status === "fulfilled") {
+      agents.push(result.value);
+    } else {
+      console.error(`[paperclip] ${ics[i]?.name} failed: ${result.reason} — continuing`);
     }
-
-    const agent = createAgentResponseSchema.parse(await res.json());
-    agents.push(agent);
-    console.log(`[paperclip] Hired ${role.name} (${agent.id})`);
   }
 
   return agents;

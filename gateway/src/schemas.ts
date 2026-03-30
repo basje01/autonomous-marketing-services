@@ -11,7 +11,9 @@ export const envSchema = z.object({
   SOLANA_NETWORK: z.enum(["devnet", "mainnet"]).default("devnet"),
   SOLANA_RPC_URL: z.string().url().default("https://api.devnet.solana.com"),
   CAMPAIGN_ESCROW_PROGRAM_ID: z.string().default("5Ljn3VEwSQ1PBbsEMuQ6jZr9uWPBpRJ8FLNbqUaSDq7Z"),
-  SOLANA_WALLET_PRIVATE_KEY: z.string().optional(),
+  SOLANA_WALLET_PRIVATE_KEY: z.string().transform((val) => {
+    try { return JSON.parse(val) as number[]; } catch { return undefined; }
+  }).optional(),
   USDC_MINT: z.string().default("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"),
 
   // x402

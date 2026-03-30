@@ -16,6 +16,7 @@ const env = parsed.data;
 export const config = {
   port: env.GATEWAY_PORT,
   nodeEnv: env.NODE_ENV,
+  walletPrivateKey: env.SOLANA_WALLET_PRIVATE_KEY as number[] | undefined,
 
   // Solana
   solanaNetwork: env.SOLANA_NETWORK,

@@ -2,7 +2,6 @@ import crypto from "node:crypto";
 import { config } from "../config.js";
 import { createCompany, hireAgents, createInitialTask } from "../paperclip-client.js";
 import { initializeCampaign } from "../escrow-client.js";
-import { platformAddress } from "../x402.js";
 import { AppError } from "../errors.js";
 import type { DeployRequest } from "../schemas.js";
 
@@ -16,14 +15,15 @@ export interface DeployResult {
 
 /**
  * Deploy an autonomous marketing team.
- *
- * Pure business logic — no HTTP concerns.
- * Throws AppError on failure (caller handles response).
+ * Pure business logic — no HTTP concerns, no x402 dependency.
  */
-export async function deployMarketingTeam(input: DeployRequest): Promise<DeployResult> {
+export async function deployMarketingTeam(
+  input: DeployRequest,
+  platformAddress: string,
+): Promise<DeployResult> {
   const campaignId = crypto.randomUUID();
 
-  // Step 1: Initialize escrow on Solana
+  // Step 1: Initialize escrow
   await initializeCampaign({
     platformAddress,
     campaignId,
@@ -37,10 +37,10 @@ export async function deployMarketingTeam(input: DeployRequest): Promise<DeployR
     `Autonomous marketing team for ${input.projectName}. Execute a full marketing campaign: research, SEO, content, social, and community.`,
   );
 
-  // Step 3: Hire agents
+  // Step 3: Hire Minerva first (must succeed), then ICs in parallel
   const agents = await hireAgents(company.id);
 
-  // Step 4: Find strategist and assign initial task
+  // Step 4: Find Minerva and assign initial task
   const strategist = agents.find((a) => a.name === "Minerva");
   if (!strategist) {
     throw new AppError("Failed to hire Minerva (Marketing Strategist)", 500, "STRATEGIST_MISSING");

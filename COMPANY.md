@@ -16,7 +16,7 @@ goals:
 
 # Frontier Marketing OS
 
-An autonomous marketing team that crypto founders deploy with a single USDC payment. 6 AI agent roles backed by 161 specialist marketing skills from LemuriaOS.
+An autonomous marketing team that crypto founders deploy with a single USDC payment. 7 AI agent roles backed by 161 specialist marketing skills from LemuriaOS.
 
 ## How It Works
 

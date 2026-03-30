@@ -1,261 +1,185 @@
-# Codebase Audit Report
+# Codebase Audit Report — Post-Hardening
 **Project:** Frontier Marketing OS (Colosseum 2)
 **Date:** 2026-03-30
-**Scope:** full (security + code + invariants + cost)
-**Tech Stack:** TypeScript, Express, Solana/Anchor (stub), Paperclip, Bash/Whisper
-**Agents Applied:** 6 of 21 (security-check, api-security-specialist, application-security-engineer, software-engineer-auditor, backend-engineer, api-cost-guardian)
-**Skipped:** SEO (no website deployed), infra (no CI/CD/Docker yet), perf (no frontend), accessibility (no UI), database (no DB), preflight (no tests), observability (no monitoring), live verify (not deployed)
+**Scope:** engineer (code + infra + invariants + preflight + quality + agent config)
+**Tech Stack:** TypeScript/Express, Anchor/Rust, Paperclip, x402, Zod, Vitest
+**Agents Applied:** 5 (software-engineer-auditor, backend-engineer, devops-engineer, quality-orchestrator, agent-config-auditor)
 
 ---
 
 ## Executive Summary
 
-Early-stage hackathon scaffolding with strong agent architecture design but significant security gaps in the gateway code and config inconsistencies across files. **One critical finding** (hardcoded API key in git) requires immediate action. The gateway has no authentication, rate limiting, or input validation — expected for a Phase 0 prototype but must be addressed before any demo or deployment. Agent configurations (AGENTS.md + BRAID GRDs) are well-structured and production-quality. Config invariants between `.paperclip.yaml` and `paperclip-client.ts` have 3 timeout mismatches that could kill agents mid-run.
-
----
+The hardening sprint successfully established Zod validation, error types, service extraction, security headers, CI, and 14 passing tests. However, the audit found **2 critical**, **5 high**, **13 medium**, and **8 low** findings. The most impactful: build script produces no output (production broken), x402 keypair bypasses Zod config, missing GRD 7 for Themis, and inconsistent agent name references. Config invariants between `.paperclip.yaml` and `paperclip-client.ts` are now perfectly aligned (all 7 agents match). Overall quality grade improved from D/C to **B+** since last audit.
 
 ## Scores
 
 | Domain | Grade | Critical | High | Medium | Low |
 |--------|-------|----------|------|--------|-----|
-| Security | D | 1 | 5 | 4 | 1 |
-| Code Quality | C | 2 | 4 | 7 | 4 |
-| Invariants | C | 0 | 1 | 3 | 1 |
-| Cost | B | 0 | 0 | 1 | 0 |
-| Infrastructure | — | Skipped (no CI/CD/Docker) | | | |
-| Performance | — | Skipped (no frontend) | | | |
-| SEO | — | Skipped (no website) | | | |
+| Code Quality | B | 2 | 3 | 5 | 4 |
+| Infrastructure | B- | 0 | 0 | 5 | 3 |
+| Agent Config | B+ | 0 | 2 | 3 | 1 |
+| Invariants | A | 0 | 0 | 0 | 0 |
+| Preflight | 3/7 | — | — | — | — |
 
 ---
 
-## CRITICAL (3)
+## CRITICAL (2)
 
-### AUDIT-001: Hardcoded API Key in Git
-**Agent:** security-check
-**Location:** scripts/daily-twitter-intel.sh:11
-**Confidence:** HIGH
-
-**Finding:** Twitter API key `[REDACTED]` is hardcoded in a git-tracked file. This key is in git history permanently.
-
-**Impact:** Anyone with repo access (or if repo goes public for hackathon submission) has full Twitter API access.
-
-**Fix:**
-```bash
-# Replace line 11 with:
-API_KEY="${TWITTERAPI_IO_KEY:?Missing TWITTERAPI_IO_KEY env var}"
-```
-Then rotate the key at twitterapi.io.
-
-**Reference:** CWE-798: Use of Hard-coded Credentials
-
----
-
-### AUDIT-002: `null as any` Keypair — Runtime Crash
+### AUDIT-E01: x402 keypair bypasses Zod config validation
 **Agent:** software-engineer-auditor
-**Location:** gateway/src/server.ts:52
+**Location:** gateway/src/x402.ts:23-33
 **Confidence:** HIGH
 
-**Finding:** `clientKeypair: null as any` bypasses TypeScript type safety. Will crash when escrow integration is wired up.
+**Finding:** `SOLANA_WALLET_PRIVATE_KEY` and `NODE_ENV` are read directly from `process.env` instead of the validated `config` object. Malformed JSON crashes at import time with an unhelpful error. Also blocks testability — any import of x402.ts or deploy.service.ts triggers keypair generation.
 
-**Impact:** `NullPointerException` on any `.publicKey` access.
-
-**Fix:**
-```typescript
-// Replace with:
-clientKeypair: Keypair.generate(), // Placeholder devnet keypair
-```
+**Fix:** Move wallet key parsing to `config.ts` via Zod transform. Lazy-init the keypair in a getter function.
 
 ---
 
-### AUDIT-003: `parseFloat` for USDC Monetary Values
+### AUDIT-E02: Build script produces no output
+**Agent:** devops-engineer
+**Location:** gateway/package.json:8
+**Confidence:** HIGH
+
+**Finding:** `"build": "tsc --noEmit"` is a typecheck, not a build. `"start": "node dist/server.js"` will crash because `dist/` is never created.
+
+**Fix:** Split: `"build": "tsc"` and `"typecheck": "tsc --noEmit"`. Update root `package.json` to use `typecheck` for CI.
+
+---
+
+## HIGH (5)
+
+### AUDIT-E03: Missing GRD 7 for Themis
+**Agent:** agent-config-auditor
+**Location:** skills/braid-marketing/SKILL.md (missing), agents/evals-engineer/AGENTS.md:31
+**Confidence:** HIGH
+
+**Finding:** Themis references "GRD 7: Evals Engineer" but it doesn't exist in the BRAID skill. SKILL.md says "6 agent roles" and the Meta-GRD omits Themis.
+
+**Fix:** Create GRD 7 in braid-marketing/SKILL.md. Update description to "7 agent roles". Add Themis to Meta-GRD after COMPLETE node.
+
+---
+
+### AUDIT-E04: Unvalidated campaigns proxy response
 **Agent:** software-engineer-auditor
-**Location:** gateway/src/config.ts:14
+**Location:** gateway/src/app.ts:92-106
 **Confidence:** HIGH
 
-**Finding:** `parseFloat` introduces IEEE 754 rounding errors on financial values written to Solana.
+**Finding:** `/api/campaigns` proxies raw Paperclip response to client without Zod validation. Inconsistent with the hardening pattern applied to all other Paperclip calls.
 
-**Impact:** Incorrect escrow amounts on-chain.
-
-**Fix:**
-```typescript
-// Store as integer micro-units (USDC has 6 decimals):
-campaignPriceUsdcMicro: Math.round(
-  parseFloat(process.env.CAMPAIGN_PRICE_USDC || "5") * 1_000_000
-),
-```
+**Fix:** Create `listCompanies()` in paperclip-client.ts with a Zod array schema.
 
 ---
 
-## HIGH (8)
-
-### AUDIT-004: No Authentication on Deploy Endpoint
-**Agent:** api-security-specialist
-**Location:** gateway/src/server.ts:32
+### AUDIT-E05: Cross-agent name inconsistency (5 instances)
+**Agent:** agent-config-auditor
+**Location:** Multiple AGENTS.md files
 **Confidence:** HIGH
 
-**Finding:** `POST /api/deploy-marketing-team` has zero auth. Anyone can create campaigns.
+**Finding:** Several agents use role titles ("SEO Agent") instead of Greek names ("Hermes"):
+- marketing-strategist/AGENTS.md:28-31 (delegation list)
+- chief-of-staff/AGENTS.md:18 (monitors list)
+- chief-of-staff/AGENTS.md:30,59,64 ("4 downstream agents")
+- seo/content/social/community AGENTS.md:16 ("Reports to: Marketing Strategist" not "Minerva")
+- marketing-strategist/AGENTS.md:56 ("Chief of Staff" not "Argus")
 
-**Fix:** Add x402 payment verification (the intended design) or API key auth as interim:
-```typescript
-const requireAuth = (req, res, next) => {
-  const key = req.headers["x-api-key"];
-  if (key !== process.env.GATEWAY_API_KEY) return res.status(401).json({ error: "Unauthorized" });
-  next();
-};
-app.post("/api/deploy-marketing-team", requireAuth, async (req, res) => { ... });
-```
+**Fix:** Replace all role-title references with Greek names throughout all AGENTS.md files.
 
-### AUDIT-005: No Rate Limiting
-**Agent:** api-security-specialist
-**Location:** gateway/src/server.ts (global)
-**Confidence:** HIGH
+---
 
-**Finding:** No rate limiting on any endpoint. Deploy endpoint creates real AI agent resources.
-
-**Fix:** `pnpm add express-rate-limit` and add middleware.
-
-### AUDIT-006: Error Details Leaked to Client
-**Agent:** security-check
-**Location:** gateway/src/server.ts:101-104
-**Confidence:** HIGH
-
-**Finding:** Internal error messages (stack traces, Solana RPC errors, internal URLs) returned to client.
-
-**Fix:** Remove `details` field from 500 response. Log only server-side.
-
-### AUDIT-007: SSRF Risk via `website` Field
-**Agent:** application-security-engineer
-**Location:** gateway/src/server.ts:34, paperclip-client.ts:166
+### AUDIT-E06: Non-atomic deploy with no failure caching
+**Agent:** backend-engineer
+**Location:** gateway/src/services/deploy.service.ts:27-65, gateway/src/app.ts:68-70
 **Confidence:** MEDIUM
 
-**Finding:** User-supplied `website` URL passed to agent task descriptions without validation. Agents may fetch it.
+**Finding:** 4-step deploy has no compensation on partial failure. Idempotency only caches successes — retries with same key re-execute, creating duplicates.
 
-**Fix:** Validate URL scheme (`https://` only) and block private IP ranges.
-
-### AUDIT-008: No CORS Configuration
-**Agent:** api-security-specialist
-**Location:** gateway/src/server.ts (global)
-**Confidence:** HIGH
-
-**Finding:** Express defaults to allowing all origins.
-
-**Fix:** Add `cors` package with explicit origin allowlist.
-
-### AUDIT-009: Timeout Mismatch (3 Agents)
-**Agent:** api-cost-guardian
-**Location:** .paperclip.yaml vs paperclip-client.ts:128
-**Confidence:** HIGH
-
-**Finding:** `.paperclip.yaml` sets Chief of Staff, Social, and Community agents to 600s timeout. `paperclip-client.ts` sends 900s to the API for ALL agents. Agents could be killed mid-run.
-
-| Agent | .paperclip.yaml | paperclip-client.ts |
-|-------|----------------|---------------------|
-| Chief of Staff | 600 | 900 |
-| Social Agent | 600 | 900 |
-| Community Agent | 600 | 900 |
-
-**Fix:** Add `timeoutSec` per role in `AGENT_ROLES` and use `role.timeoutSec` instead of hardcoded 900.
-
-### AUDIT-010: No Timeout on Fetch Calls to Paperclip API
-**Agent:** backend-engineer
-**Location:** paperclip-client.ts:27, 114, 184; server.ts:113
-**Confidence:** HIGH
-
-**Finding:** All fetch calls to Paperclip have no timeout. If Paperclip hangs, the gateway hangs.
-
-**Fix:** Add `signal: AbortSignal.timeout(30_000)` to every fetch.
-
-### AUDIT-011: Silent Agent Hire Failure
-**Agent:** backend-engineer
-**Location:** paperclip-client.ts:134-136
-**Confidence:** HIGH
-
-**Finding:** Failed agent hires are logged but skipped via `continue`. Campaign could deploy with missing agents.
-
-**Fix:** Throw if the Strategist fails to hire. Collect errors and report partial failures.
+**Fix:** Cache failures in idempotency store with short TTL. Add cancel/cleanup on partial failure.
 
 ---
 
-## MEDIUM (10)
+### AUDIT-E07: Sequential agent hiring (worst case 210s)
+**Agent:** backend-engineer
+**Location:** gateway/src/paperclip-client.ts:109-146
+**Confidence:** HIGH
 
-### AUDIT-012: Agent Count Mismatch in Comments/Messages
-**Location:** server.ts:28, 65, 97
-**Finding:** Comments say "5 agents" but code hires 6. Response message says "5 agents hired."
-**Fix:** Use `${agents.length}` in the response. Update comments to 6.
+**Finding:** 7 agents hired sequentially with 30s timeout each. No overall deploy timeout.
 
-### AUDIT-013: Unused Dependencies
-**Location:** gateway/package.json:12-14
-**Finding:** `@coral-xyz/anchor` and `@solana/spl-token` imported but never used.
-**Fix:** Remove until Anchor program is built.
-
-### AUDIT-014: Unused Imports in escrow-client.ts
-**Location:** gateway/src/escrow-client.ts:1-6
-**Finding:** `Keypair`, `SystemProgram` imported but unused. `connection` instantiated but unused.
-**Fix:** Remove unused imports. Use `import type { Keypair }` for the type.
-
-### AUDIT-015: No Input Validation Beyond Presence
-**Location:** gateway/src/server.ts:34-41
-**Finding:** No type, length, or content validation on request body.
-**Fix:** Add Zod schema validation.
-
-### AUDIT-016: No Security Headers (helmet)
-**Location:** gateway/src/server.ts (global)
-**Fix:** `pnpm add helmet` and `app.use(helmet())`.
-
-### AUDIT-017: Internal URL in Health Response
-**Location:** gateway/src/server.ts:17
-**Finding:** `paperclip: config.paperclipApiUrl` leaks internal URL.
-**Fix:** Remove from health response or gate behind admin auth.
-
-### AUDIT-018: Hardcoded Binary Paths in Shell Script
-**Location:** scripts/daily-twitter-intel.sh:14-15
-**Finding:** macOS-specific paths for whisper and ffmpeg. Not portable.
-**Fix:** Use `command -v whisper` and `command -v ffmpeg`.
-
-### AUDIT-019: Budget Fields Missing from .paperclip.yaml
-**Location:** .paperclip.yaml (entire file)
-**Finding:** No `monthlyBudget` fields. Only defined in paperclip-client.ts. No single source of truth.
-**Fix:** Add budget fields to YAML or document that TS code is canonical.
-
-### AUDIT-020: Campaign Underpriced ($5 USDC vs ~$8-14 actual cost)
-**Location:** gateway/src/config.ts:14
-**Finding:** Estimated per-campaign API cost is $8-14 (Opus strategist ~$5-8, 5 Sonnet agents ~$3-6). Campaign price is $5 USDC.
-**Fix:** Raise to $15-20 USDC or track actual costs per campaign to calibrate.
-
-### AUDIT-021: Root `pnpm test` Points to Non-existent Anchor Tests
-**Location:** package.json:9-10
-**Finding:** `"test": "pnpm test:anchor"` runs `anchor test` which doesn't exist.
-**Fix:** Change to `"test": "echo 'No tests yet'"` until Anchor program exists.
+**Fix:** Hire Minerva first (must succeed), then remaining 6 via `Promise.allSettled()`.
 
 ---
 
-## LOW (5)
+## MEDIUM (13)
 
-### AUDIT-022: No `.env.example` File
-**Fix:** Create with all required env vars documented.
+| ID | Finding | Location | Fix |
+|----|---------|----------|-----|
+| E08 | Unbounded idempotency Map (memory leak) | app.ts:30-37 | Add max-size cap (1000 entries) |
+| E09 | Idempotency key unvalidated (could be string[]) | app.ts:47 | `String(req.headers["x-idempotency-key"] ?? "")` |
+| E10 | CORS origin split without trim | app.ts:18 | `.split(",").map(s => s.trim())` |
+| E11 | `no-console` rule vs production console.log usage | eslint.config.js:19 | Change to `["off"]` or add log wrapper |
+| E12 | Website URL accepts localhost/private IPs (SSRF) | schemas.ts:39 | Add `.refine()` blocking private ranges |
+| E13 | deploy.service imports platformAddress from x402 | deploy.service.ts:5 | Pass as parameter for testability |
+| E14 | No CI lint or format:check steps | .github/workflows/ci.yml | Add lint + format:check steps |
+| E15 | Anchor CI builds but never tests | .github/workflows/ci.yml | Add `anchor test` step |
+| E16 | No pnpm audit in CI (no vuln scanning) | .github/workflows/ci.yml | Add `pnpm audit` step |
+| E17 | COMPANY.md body says "6 agent roles" (should be 7) | COMPANY.md:17 | Fix text to "7" |
+| E18 | Minerva doesn't delegate to Argus or Themis | marketing-strategist/AGENTS.md:27 | Add delegation entries |
+| E19 | GRD 1 + 6 hardcode "4 subtasks" / "4 downstream" | braid-marketing/SKILL.md:48,172 | Update counts and name agents |
+| E20 | Hardcoded devnet USDC mint in Anchor binary | campaign-escrow/lib.rs:10 | Use instruction param or feature flag |
 
-### AUDIT-023: No `engines` Field in package.json
-**Fix:** Add `"engines": { "node": ">=20.0.0" }`.
+---
 
-### AUDIT-024: No Request Logging
-**Fix:** Add `morgan` middleware for request audit trail.
+## LOW (8)
 
-### AUDIT-025: No `/tmp` Cleanup Trap in Shell Scripts
-**Fix:** Add `trap 'rm -f /tmp/tweet_video_*.mp4 /tmp/tweet_audio_*.wav' EXIT`.
+| ID | Finding | Location |
+|----|---------|----------|
+| E21 | No Solana address validation (base58) | schemas.ts:13,15 |
+| E22 | `import.meta.url` path resolution breaks after compile | paperclip-client.ts:99-100 |
+| E23 | x402 middleware applied globally (hits health check) | app.ts:28 |
+| E24 | No graceful shutdown handler (SIGTERM) | server.ts |
+| E25 | Health check doesn't verify dependencies | app.ts:41-43 |
+| E26 | Anchor.toml only has localnet, no devnet section | campaign-escrow/Anchor.toml |
+| E27 | Test coverage is schema-only (no route/service tests) | gateway/src/ |
+| E28 | Argus lacks own BLOCKER format (has OPS ALERT only) | chief-of-staff/AGENTS.md:55 |
 
-### AUDIT-026: GitHub Script Has No Auth Pre-check
-**Fix:** Add `command -v gh >/dev/null || exit 1` and `gh auth status || exit 1`.
+---
+
+## Invariants: ALL PASS
+
+| Check | Status |
+|-------|--------|
+| .paperclip.yaml vs AGENT_ROLES (models) | PASS — all 7 match |
+| .paperclip.yaml vs AGENT_ROLES (timeouts) | PASS — all 7 match |
+| .paperclip.yaml vs AGENT_ROLES (maxTurns) | PASS — all 7 match |
+| DELIVERABLES_EXPECTED (6) vs non-CEO agents (6) | PASS |
+| Program ID across lib.rs + Anchor.toml + schemas.ts | PASS |
+| USDC mint across lib.rs + schemas.ts | PASS |
+
+---
+
+## Preflight: 3/7
+
+| Check | Status |
+|-------|--------|
+| Tests pass | PASS (14/14) |
+| Build passes | PASS (tsc --noEmit) |
+| Actual build output | FAIL (--noEmit produces nothing) |
+| Smoke test | FAIL (none exists) |
+| CI coverage | PASS (workflow exists) |
+| Pre-push hook | FAIL (none exists) |
+| Invariant tests | FAIL (no config-invariants.test.ts) |
 
 ---
 
 ## Strengths
 
-1. **Agent architecture is excellent** — 6 roles with clear hierarchies, BRAID GRDs for structured reasoning, error reporting protocols, and verification checklists. This is production-quality agent design.
-2. **BRAID integration is unique** — No other hackathon project will have bounded reasoning diagrams preventing output drift across a multi-agent chain. The compounding error prevention is a genuine technical differentiator.
-3. **company.new compatibility** — COMPANY.md with `agentcompanies/v1` schema, YAML frontmatter on all AGENTS.md files, and `.paperclip.yaml` config. Ready for one-command import.
-4. **Daily intelligence pipeline** — Automated GitHub + Twitter monitoring with Whisper video transcription is a serious competitive intelligence advantage.
-5. **TypeScript compiles clean** — No type errors despite early-stage code.
-6. **Git history is clean** — 6 well-documented commits with clear scope.
+1. **Zod validation pipeline is excellent** — env, request, and response all validated with typed schemas. Clean startup crash on invalid config.
+2. **Error type hierarchy is clean** — AppError → ValidationError / ExternalServiceError / EscrowNotImplementedError. Consistent error responses.
+3. **Service extraction is proper** — deploy.service.ts has zero HTTP concerns. app.ts handles only routing and middleware.
+4. **Config invariants are perfectly aligned** — .paperclip.yaml and AGENT_ROLES have zero drift across all 7 agents.
+5. **Agent BRAID GRDs are comprehensive** — 6 complete Mermaid diagrams + compressed formats + critic nodes.
+6. **Agent naming (Greek/Latin) is memorable** — Minerva, Argus, Hermes, Calliope, Mercury, Vesta, Themis.
+7. **Corrections log + autonomy log** — Transcript-driven quality infrastructure ready for Phase 1 iteration.
 
 ---
 
@@ -263,16 +187,16 @@ app.post("/api/deploy-marketing-team", requireAuth, async (req, res) => { ... })
 
 | # | ID | Domain | Effort | Impact |
 |---|-----|--------|--------|--------|
-| 1 | AUDIT-001 | Security | 10 min | API key exposure eliminated |
-| 2 | AUDIT-002 | Code | 5 min | Runtime crash prevented |
-| 3 | AUDIT-003 | Code | 10 min | Financial precision fixed |
-| 4 | AUDIT-009 | Invariants | 15 min | Agent timeout mismatch fixed |
-| 5 | AUDIT-012 | Code | 5 min | Agent count consistency |
-| 6 | AUDIT-006 | Security | 5 min | Error leaking stopped |
-| 7 | AUDIT-014 | Code | 5 min | Dead code removed |
-| 8 | AUDIT-013 | Code | 5 min | Unused deps removed |
-| 9 | AUDIT-015 | Security | 20 min | Input validation added |
-| 10 | AUDIT-018 | Code | 5 min | Script portability |
+| 1 | E02 | Infra | 5 min | Build actually works |
+| 2 | E01 | Code | 20 min | Config consistency + testability |
+| 3 | E03 | Agent | 15 min | GRD 7 exists for Themis |
+| 4 | E05 | Agent | 15 min | Name consistency across all agents |
+| 5 | E14 | Infra | 5 min | CI catches lint/format issues |
+| 6 | E17+E19 | Agent | 10 min | Count corrections (7 agents, not 4/6) |
+| 7 | E04 | Code | 10 min | Campaigns endpoint validated |
+| 8 | E18 | Agent | 10 min | Minerva delegates to all 7 agents |
+| 9 | E06 | Code | 30 min | Failure caching in idempotency |
+| 10 | E07 | Code | 20 min | Parallel agent hiring |
 
 ---
 
@@ -280,9 +204,8 @@ app.post("/api/deploy-marketing-team", requireAuth, async (req, res) => { ... })
 
 | Agent | What It Checked |
 |-------|----------------|
-| security-check | OWASP Top 10, secrets, attack surface |
-| api-security-specialist | Auth, rate limiting, CORS, headers |
-| application-security-engineer | SSRF, injection, supply chain |
-| software-engineer-auditor | Code quality, dead code, type safety, architecture |
-| backend-engineer | API design, error handling, fetch timeouts, health checks |
-| api-cost-guardian | Config invariants, budget consistency, cost projection |
+| software-engineer-auditor | Code quality, DRY, type safety, module boundaries, dead code |
+| backend-engineer | API architecture, error handling, data flow, service patterns |
+| devops-engineer | CI/CD, build pipeline, deployment, Docker, shell scripts |
+| quality-orchestrator | Cross-domain synthesis, preflight gate, invariant scan |
+| agent-config-auditor | 7 AGENTS.md consistency, BRAID GRD references, naming, hierarchy |

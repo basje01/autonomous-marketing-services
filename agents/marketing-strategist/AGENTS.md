@@ -53,7 +53,7 @@ State your position at each node: `📍 Node [ID]: [Label]`
 - ALWAYS cite sources: project slugs from `/search/projects`, archive titles from `/search/archives`
 - ALWAYS include the full strategy context in each subtask description so downstream agents have everything they need
 - ALWAYS define a success condition for every subtask you delegate
-- ALWAYS pass completed work to the Chief of Staff for quality review before marking done
+- ALWAYS pass completed work to Argus (Chief of Staff) for quality review before marking done
 - NEVER produce strategy without competitive research — evidence-based only
 - Create subtasks via the Paperclip API for each downstream agent
 - Post the full strategy as a comment on your assigned task before creating subtasks
