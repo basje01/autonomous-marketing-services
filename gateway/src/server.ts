@@ -2,11 +2,16 @@ import express from "express";
 import { config } from "./config.js";
 import { createCompany, hireAgents, createInitialTask, AGENT_ROLES } from "./paperclip-client.js";
 import { initializeCampaign } from "./escrow-client.js";
+import { createX402Middleware } from "./x402.js";
 import { Keypair } from "@solana/web3.js";
 import crypto from "node:crypto";
 
 const app = express();
 app.use(express.json({ limit: "10kb" }));
+
+// x402 payment gate — returns 402 for unpaid requests to protected routes
+const { middleware: x402, platformKeypair } = createX402Middleware();
+app.use(x402);
 
 /**
  * Health check — reports gateway status only, no internal URLs exposed.
@@ -22,12 +27,16 @@ app.get("/api/health", (_req, res) => {
  * Deploy an autonomous marketing team.
  *
  * Flow:
- *   1. Client sends project brief
- *   2. (TODO) x402 payment verification — returns 402 if unpaid
- *   3. Initialize campaign escrow on Solana
- *   4. Create Paperclip company + hire 6 agents
- *   5. Assign initial strategy task to Marketing Strategist
- *   6. Return company dashboard URL
+ *   1. Client sends project brief + USDC payment (x402 middleware handles verification)
+ *   2. Initialize campaign escrow on Solana
+ *   3. Create Paperclip company + hire 6 agents
+ *   4. Assign initial strategy task to Marketing Strategist
+ *   5. Return company dashboard URL
+ *
+ * The x402 middleware intercepts this route. If the client has not paid,
+ * it returns 402 Payment Required with pricing details. The client
+ * constructs a Solana USDC payment and retries with X-PAYMENT header.
+ * Only paid requests reach this handler.
  */
 app.post("/api/deploy-marketing-team", async (req, res) => {
   try {
@@ -60,17 +69,13 @@ app.post("/api/deploy-marketing-team", async (req, res) => {
       }
     }
 
-    // TODO: x402 payment verification
-    // For now, skip payment and go straight to deployment
-    // In production: return 402 with X-PAYMENT-REQUIRED header if unpaid
-
     const campaignId = crypto.randomUUID();
 
-    // Step 1: Initialize escrow on Solana (placeholder until Anchor program is ready)
+    // Step 1: Initialize escrow on Solana
     console.log(`[gateway] Initializing campaign escrow: ${campaignId}`);
     const deliverablesExpected = AGENT_ROLES.filter(r => r.role !== "CEO").length;
     await initializeCampaign({
-      clientKeypair: Keypair.generate(), // Placeholder devnet keypair
+      clientKeypair: platformKeypair,
       campaignId,
       budgetUsdcMicro: config.campaignPriceUsdcMicro,
       deliverablesExpected,
