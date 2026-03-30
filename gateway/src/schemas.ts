@@ -15,6 +15,10 @@ export const envSchema = z.object({
     try { return JSON.parse(val) as number[]; } catch { return undefined; }
   }).optional(),
   USDC_MINT: z.string().default("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"),
+  KAMINO_PROGRAM_ID: z.string().default("SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"),
+  KAMINO_FARMS_PROGRAM_ID: z.string().default("FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"),
+  KAMINO_LENDING_MARKET: z.string().optional(),
+  KAMINO_USDC_RESERVE: z.string().optional(),
 
   // x402
   X402_FACILITATOR_URL: z.string().url().default("https://x402.coinbase.com"),
@@ -22,6 +26,7 @@ export const envSchema = z.object({
 
   // Campaign
   DELIVERABLES_EXPECTED: z.coerce.number().int().min(1).max(10).default(6),
+  AUDIT_LOG_DIR: z.string().default("./data/audit"),
 
   // Paperclip
   PAPERCLIP_API_URL: z.string().url().default("http://localhost:3100"),
@@ -34,14 +39,22 @@ export type Env = z.infer<typeof envSchema>;
 
 // === Request Schemas ===
 
+export const milestoneInputSchema = z.object({
+  name: z.string().min(1).max(120),
+  amountUsdc: z.coerce.number().positive(),
+});
+
 export const deployRequestSchema = z.object({
   projectName: z.string().min(1).max(200),
   description: z.string().min(1).max(5000),
   targetAudience: z.string().min(1).max(2000),
   website: z.string().url().startsWith("https://").optional(),
+  budgetUsdc: z.coerce.number().positive().optional(),
+  milestones: z.array(milestoneInputSchema).min(1).max(10).optional(),
 });
 
 export type DeployRequest = z.infer<typeof deployRequestSchema>;
+export type DeployMilestone = z.infer<typeof milestoneInputSchema>;
 
 // === Paperclip API Response Schemas ===
 // Validates what the Paperclip API actually returns instead of trusting it blindly.

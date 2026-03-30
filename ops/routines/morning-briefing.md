@@ -1,6 +1,6 @@
 # Routine: Morning Briefing
 
-**Trigger**: Daily at 9:30 AM Amsterdam (after intel pipeline runs at 9:00/9:05)
+**Trigger**: Daily at 07:30 AM Amsterdam (Europe/Amsterdam, after intel pipeline runs at 07:00/07:05 UTC)
 **Assigned to**: Atlas (Ops CEO)
 **Duration**: ~5 minutes
 

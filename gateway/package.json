@@ -16,6 +16,8 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "@kamino-finance/klend-sdk": "^7.3.21",
+    "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.95.0",
     "@x402/core": "^2.8.0",
     "@x402/express": "^2.8.0",
@@ -25,6 +27,7 @@
     "express": "^4.21.0",
     "express-rate-limit": "^8.3.1",
     "helmet": "^8.1.0",
+    "tweetnacl": "^1.0.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

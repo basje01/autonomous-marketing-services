@@ -1,6 +1,6 @@
 # Routine: Campaign Health Check
 
-**Trigger**: Every 2 hours during business hours (10 AM, 12 PM, 2 PM, 4 PM Amsterdam)
+**Trigger**: Every 2 hours during business hours (08:00, 10:00, 12:00, 14:00, 16:00 Europe/Amsterdam)
 **Assigned to**: Iris (Campaign Monitor)
 **Duration**: ~3 minutes per campaign
 

@@ -23,6 +23,10 @@ export const config = {
   solanaRpcUrl: env.SOLANA_RPC_URL,
   campaignEscrowProgramId: env.CAMPAIGN_ESCROW_PROGRAM_ID,
   usdcMint: env.USDC_MINT,
+  kaminoProgramId: env.KAMINO_PROGRAM_ID,
+  kaminoFarmsProgramId: env.KAMINO_FARMS_PROGRAM_ID,
+  kaminoLendingMarket: env.KAMINO_LENDING_MARKET,
+  kaminoUsdcReserve: env.KAMINO_USDC_RESERVE,
 
   // x402
   x402FacilitatorUrl: env.X402_FACILITATOR_URL,
@@ -30,6 +34,7 @@ export const config = {
 
   // Campaign
   deliverablesExpected: env.DELIVERABLES_EXPECTED,
+  auditLogDir: env.AUDIT_LOG_DIR,
 
   // Paperclip
   paperclipApiUrl: env.PAPERCLIP_API_URL,

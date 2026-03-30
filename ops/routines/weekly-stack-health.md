@@ -1,6 +1,6 @@
 # Routine: Weekly Stack Health
 
-**Trigger**: Every Monday at 10 AM Amsterdam
+**Trigger**: Every Monday at 08:00 Europe/Amsterdam
 **Assigned to**: Sentinel (Platform Guard)
 **Duration**: ~10 minutes
 

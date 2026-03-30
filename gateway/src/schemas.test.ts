@@ -21,6 +21,21 @@ describe("deployRequestSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts variable budget with milestones", () => {
+    const result = deployRequestSchema.safeParse({
+      projectName: "SolPay",
+      description: "A payment gateway",
+      targetAudience: "Merchants",
+      budgetUsdc: 1250,
+      milestones: [
+        { name: "Strategy", amountUsdc: 250 },
+        { name: "Content", amountUsdc: 500 },
+        { name: "Distribution", amountUsdc: 500 },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("rejects missing projectName", () => {
     const result = deployRequestSchema.safeParse({
       description: "A payment gateway",
@@ -72,6 +87,19 @@ describe("deployRequestSchema", () => {
       description: "A payment gateway",
       targetAudience: "Merchants",
       website: "not-a-url",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects milestone arrays over 10 items", () => {
+    const result = deployRequestSchema.safeParse({
+      projectName: "SolPay",
+      description: "A payment gateway",
+      targetAudience: "Merchants",
+      milestones: Array.from({ length: 11 }, (_, i) => ({
+        name: `Milestone ${i + 1}`,
+        amountUsdc: 10,
+      })),
     });
     expect(result.success).toBe(false);
   });

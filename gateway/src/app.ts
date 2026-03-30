@@ -4,6 +4,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import crypto from "node:crypto";
 import { config } from "./config.js";
+import { readCampaignAuditBundle } from "./audit-trail.js";
 import { createX402Middleware, getPlatformAddress } from "./x402.js";
 import { deployMarketingTeam } from "./services/deploy.service.js";
 import { listCompanies } from "./paperclip-client.js";
@@ -105,6 +106,27 @@ export function createApp(): express.Express {
       res.json(companies);
     } catch {
       res.status(502).json({ error: "Failed to reach Paperclip API", code: "EXTERNAL_SERVICE_ERROR" });
+    }
+  });
+
+  app.get("/api/campaigns/:campaignId/audit", readLimiter, async (req, res) => {
+    try {
+      const campaignId = req.params.campaignId;
+      if (!campaignId) {
+        res.status(400).json({ error: "Campaign ID is required", code: "VALIDATION_ERROR" });
+        return;
+      }
+
+      const auditBundle = await readCampaignAuditBundle(campaignId);
+      res.json(auditBundle);
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message, code: error.code });
+        return;
+      }
+
+      console.error("[gateway] Failed to read campaign audit trail:", error);
+      res.status(500).json({ error: "Failed to read campaign audit trail", code: "INTERNAL_ERROR" });
     }
   });
 
