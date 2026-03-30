@@ -135,7 +135,7 @@ export async function hireAgents(
           model: role.model,
           maxTurnsPerRun: role.maxTurns,
           timeoutSec: role.timeoutSec,
-          args: ["--add-dir", skillsDir, "--dangerously-skip-permissions"],
+          args: ["--add-dir", skillsDir, "--permission-mode", "acceptEdits"],
         },
       }),
     });
