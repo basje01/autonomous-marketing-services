@@ -1,6 +1,6 @@
 ---
 name: Frontier Marketing OS
-description: Autonomous marketing team for crypto projects. 6 AI agents — Strategist, Chief of Staff, SEO, Content, Social, Community — backed by 161 specialist skills. Deploy with USDC on Solana, get a full marketing campaign.
+description: Autonomous marketing team for crypto projects. 7 AI agents — Minerva (Strategist), Argus (Chief of Staff), Hermes (SEO), Calliope (Content), Mercury (Social), Vesta (Community), Themis (Evals) — backed by 161 specialist skills. Deploy with USDC on Solana, get a full marketing campaign.
 slug: frontier-marketing-os
 schema: agentcompanies/v1
 version: 0.1.0
@@ -30,12 +30,13 @@ An autonomous marketing team that crypto founders deploy with a single USDC paym
 ## Agent Org Chart
 
 ```
-Marketing Strategist (CEO)
-├── Chief of Staff (ops, QA, health checks)
-├── SEO Agent (technical audit, keywords, meta tags, schema)
-├── Content Agent (homepage copy, Twitter threads, blog posts)
-├── Social Agent (4-week calendar, engagement strategy)
-└── Community Agent (FAQ, onboarding, engagement playbook)
+Minerva — Marketing Strategist (CEO)
+├── Argus — Chief of Staff (ops, health checks, autonomy log)
+├── Hermes — SEO Specialist (technical audit, keywords, meta tags)
+├── Calliope — Content Creator (homepage copy, Twitter threads, blog)
+├── Mercury — Social Campaign Manager (4-week calendar, engagement)
+├── Vesta — Community Manager (FAQ, onboarding, playbook)
+└── Themis — Evals Engineer (performance reviews, quality patterns)
 ```
 
 ## Skills Library

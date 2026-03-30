@@ -3,11 +3,32 @@
   "version": "0.1.0",
   "private": true,
   "description": "Autonomous Marketing Engine for Crypto Projects — Colosseum Frontier Hackathon",
+  "type": "module",
   "scripts": {
     "dev": "pnpm --filter gateway dev",
     "build": "pnpm --filter gateway build",
-    "test": "echo 'No tests yet — Anchor program not built'"
+    "test": "pnpm --filter gateway test",
+    "test:gateway": "pnpm --filter gateway test",
+    "lint": "eslint gateway/src/",
+    "lint:fix": "eslint gateway/src/ --fix",
+    "format": "prettier --write 'gateway/src/**/*.ts'",
+    "format:check": "prettier --check 'gateway/src/**/*.ts'",
+    "typecheck": "pnpm --filter gateway build"
   },
-  "keywords": ["solana", "ai-agents", "marketing", "paperclip", "x402", "anchor"],
-  "license": "MIT"
+  "keywords": [
+    "solana",
+    "ai-agents",
+    "marketing",
+    "paperclip",
+    "x402",
+    "anchor"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.57.2"
+  }
 }

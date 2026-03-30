@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import { EscrowNotImplementedError } from "./errors.js";
 
 /**
  * Escrow client for the Anchor campaign-escrow program.
@@ -42,7 +43,7 @@ export async function initializeCampaign(params: {
   deliverablesExpected: number;
 }): Promise<string> {
   if (process.env.NODE_ENV === "production") {
-    throw new Error("Escrow client not yet implemented — cannot accept real payments in production");
+    throw new EscrowNotImplementedError();
   }
 
   // TODO: Build and send Anchor transaction via dedicated signer module
@@ -64,7 +65,7 @@ export async function submitDeliverable(params: {
   agentId: string;
 }): Promise<string> {
   if (process.env.NODE_ENV === "production") {
-    throw new Error("Escrow client not yet implemented");
+    throw new EscrowNotImplementedError();
   }
 
   console.log(
@@ -82,7 +83,7 @@ export async function completeCampaign(params: {
   campaignId: string;
 }): Promise<string> {
   if (process.env.NODE_ENV === "production") {
-    throw new Error("Escrow client not yet implemented");
+    throw new EscrowNotImplementedError();
   }
 
   console.log(
@@ -98,7 +99,7 @@ export async function cancelCampaign(params: {
   campaignId: string;
 }): Promise<string> {
   if (process.env.NODE_ENV === "production") {
-    throw new Error("Escrow client not yet implemented");
+    throw new EscrowNotImplementedError();
   }
 
   console.log(`[escrow] STUB: Would cancel campaign ${params.campaignId} and refund`);

@@ -53,3 +53,11 @@ agents:
         model: claude-sonnet-4-6
         maxTurnsPerRun: 20
         timeoutSec: 600
+
+  evals-engineer:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 15
+        timeoutSec: 600

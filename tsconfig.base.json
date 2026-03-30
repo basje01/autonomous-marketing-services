@@ -11,6 +11,10 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true
   }
 }
