@@ -5,6 +5,7 @@ export const config = {
   port: parseInt(process.env.GATEWAY_PORT || "3001", 10),
 
   // Solana
+  solanaNetwork: (process.env.SOLANA_NETWORK || "devnet") as "devnet" | "mainnet",
   solanaRpcUrl: process.env.SOLANA_RPC_URL || "https://api.devnet.solana.com",
   campaignEscrowProgramId: process.env.CAMPAIGN_ESCROW_PROGRAM_ID || "",
 

@@ -1,5 +1,4 @@
 import { PublicKey } from "@solana/web3.js";
-import type { Keypair } from "@solana/web3.js";
 
 /**
  * Escrow client for the Anchor campaign-escrow program.
@@ -10,7 +9,8 @@ import type { Keypair } from "@solana/web3.js";
  *   complete_campaign    — all deliverables done → release USDC
  *   cancel_campaign      — refund if no work started
  *
- * TODO: Wire to actual Anchor IDL once program is built (Phase 0, Days 6-7)
+ * TODO: Wire to actual Anchor IDL once program is deployed to devnet.
+ * Transaction signing will use a dedicated signer module (not raw keypair).
  */
 
 /**
@@ -36,16 +36,21 @@ export function deriveCampaignPDA(
  * Deposits USDC into the PDA and sets the expected deliverable count.
  */
 export async function initializeCampaign(params: {
-  clientKeypair: Keypair;
+  platformAddress: string;
   campaignId: string;
   budgetUsdcMicro: number;
   deliverablesExpected: number;
 }): Promise<string> {
-  // TODO: Build and send Anchor transaction
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Escrow client not yet implemented — cannot accept real payments in production");
+  }
+
+  // TODO: Build and send Anchor transaction via dedicated signer module
   console.log(
-    `[escrow] Would initialize campaign ${params.campaignId}`,
+    `[escrow] STUB: Would initialize campaign ${params.campaignId}`,
     `budget=${params.budgetUsdcMicro / 1_000_000} USDC`,
-    `deliverables=${params.deliverablesExpected}`
+    `deliverables=${params.deliverablesExpected}`,
+    `platform=${params.platformAddress}`
   );
   return "placeholder-tx-signature";
 }
@@ -58,9 +63,12 @@ export async function submitDeliverable(params: {
   deliverableHash: string;
   agentId: string;
 }): Promise<string> {
-  // TODO: Build and send Anchor transaction
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Escrow client not yet implemented");
+  }
+
   console.log(
-    `[escrow] Would submit deliverable for campaign ${params.campaignId}`,
+    `[escrow] STUB: Would submit deliverable for campaign ${params.campaignId}`,
     `hash=${params.deliverableHash}`,
     `agent=${params.agentId}`
   );
@@ -69,26 +77,30 @@ export async function submitDeliverable(params: {
 
 /**
  * Complete a campaign and release escrowed USDC.
- * Only callable when all deliverables have been submitted.
  */
 export async function completeCampaign(params: {
   campaignId: string;
 }): Promise<string> {
-  // TODO: Build and send Anchor transaction
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Escrow client not yet implemented");
+  }
+
   console.log(
-    `[escrow] Would complete campaign ${params.campaignId} and release USDC`
+    `[escrow] STUB: Would complete campaign ${params.campaignId} and release USDC`
   );
   return "placeholder-tx-signature";
 }
 
 /**
  * Cancel a campaign and refund escrowed USDC to the client.
- * Only callable if no deliverables have been submitted yet.
  */
 export async function cancelCampaign(params: {
   campaignId: string;
 }): Promise<string> {
-  // TODO: Build and send Anchor transaction
-  console.log(`[escrow] Would cancel campaign ${params.campaignId} and refund`);
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Escrow client not yet implemented");
+  }
+
+  console.log(`[escrow] STUB: Would cancel campaign ${params.campaignId} and refund`);
   return "placeholder-tx-signature";
 }

@@ -4,6 +4,10 @@ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 declare_id!("5Ljn3VEwSQ1PBbsEMuQ6jZr9uWPBpRJ8FLNbqUaSDq7Z");
 
 const MAX_DELIVERABLES: usize = 10;
+const MAX_CAMPAIGN_ID: usize = 64;
+
+/// USDC mint on Solana devnet
+const USDC_MINT: Pubkey = pubkey!("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
 
 #[program]
 pub mod campaign_escrow {
@@ -18,7 +22,7 @@ pub mod campaign_escrow {
     ) -> Result<()> {
         require!(deliverables_expected > 0 && deliverables_expected <= MAX_DELIVERABLES as u8, EscrowError::InvalidDeliverableCount);
         require!(budget_usdc > 0, EscrowError::InvalidBudget);
-        require!(campaign_id.len() <= 64, EscrowError::CampaignIdTooLong);
+        require!(campaign_id.len() <= MAX_CAMPAIGN_ID, EscrowError::CampaignIdTooLong);
 
         let campaign = &mut ctx.accounts.campaign;
         campaign.authority = ctx.accounts.authority.key();
@@ -57,7 +61,7 @@ pub mod campaign_escrow {
         let campaign = &mut ctx.accounts.campaign;
         require!(campaign.status == CampaignStatus::Active, EscrowError::CampaignNotActive);
         require!(campaign.deliverables_submitted < campaign.deliverables_expected, EscrowError::AllDeliverablesSubmitted);
-        require!(agent_id.len() <= 64, EscrowError::AgentIdTooLong);
+        require!(agent_id.len() <= MAX_CAMPAIGN_ID, EscrowError::AgentIdTooLong);
 
         campaign.deliverables_submitted += 1;
 
@@ -76,17 +80,28 @@ pub mod campaign_escrow {
     }
 
     /// Release escrowed USDC when all deliverables are submitted.
+    /// Checks → Effects (status) → Interactions (CPI transfer).
     pub fn complete_campaign(ctx: Context<CompleteCampaign>) -> Result<()> {
+        // Checks
         let campaign = &ctx.accounts.campaign;
         require!(campaign.status == CampaignStatus::Active, EscrowError::CampaignNotActive);
         require!(campaign.deliverables_submitted >= campaign.deliverables_expected, EscrowError::DeliverablesIncomplete);
 
-        // Transfer USDC from vault to platform
+        // Read values before mutable borrow
+        let budget = campaign.budget;
+        let authority = campaign.authority;
+        let campaign_id = campaign.campaign_id.clone();
+        let bump = campaign.bump;
+
+        // Effects — update status
+        ctx.accounts.campaign.status = CampaignStatus::Completed;
+
+        // Interactions — CPI transfer USDC from vault to platform
         let seeds = &[
-            b"campaign",
-            campaign.authority.as_ref(),
-            campaign.campaign_id.as_bytes(),
-            &[campaign.bump],
+            b"campaign".as_ref(),
+            authority.as_ref(),
+            campaign_id.as_bytes(),
+            &[bump],
         ];
         let signer_seeds = &[&seeds[..]];
 
@@ -100,28 +115,36 @@ pub mod campaign_escrow {
                 },
                 signer_seeds,
             ),
-            campaign.budget,
+            budget,
         )?;
 
-        let campaign = &mut ctx.accounts.campaign;
-        campaign.status = CampaignStatus::Completed;
-
-        msg!("Campaign {} completed. {} USDC released to platform.",
-            campaign.campaign_id, campaign.budget);
+        msg!("Campaign {} completed. {} USDC released to platform.", campaign_id, budget);
         Ok(())
     }
 
     /// Refund client if no deliverables have been submitted yet.
+    /// Checks → Effects (status) → Interactions (CPI transfer).
     pub fn cancel_campaign(ctx: Context<CancelCampaign>) -> Result<()> {
+        // Checks
         let campaign = &ctx.accounts.campaign;
         require!(campaign.status == CampaignStatus::Active, EscrowError::CampaignNotActive);
         require!(campaign.deliverables_submitted == 0, EscrowError::CannotCancelWithDeliverables);
 
+        // Read values before mutable borrow
+        let budget = campaign.budget;
+        let authority = campaign.authority;
+        let campaign_id = campaign.campaign_id.clone();
+        let bump = campaign.bump;
+
+        // Effects — update status
+        ctx.accounts.campaign.status = CampaignStatus::Cancelled;
+
+        // Interactions — CPI transfer USDC back to client
         let seeds = &[
-            b"campaign",
-            campaign.authority.as_ref(),
-            campaign.campaign_id.as_bytes(),
-            &[campaign.bump],
+            b"campaign".as_ref(),
+            authority.as_ref(),
+            campaign_id.as_bytes(),
+            &[bump],
         ];
         let signer_seeds = &[&seeds[..]];
 
@@ -135,14 +158,10 @@ pub mod campaign_escrow {
                 },
                 signer_seeds,
             ),
-            campaign.budget,
+            budget,
         )?;
 
-        let campaign = &mut ctx.accounts.campaign;
-        campaign.status = CampaignStatus::Cancelled;
-
-        msg!("Campaign {} cancelled. {} USDC refunded to client.",
-            campaign.campaign_id, campaign.budget);
+        msg!("Campaign {} cancelled. {} USDC refunded to client.", campaign_id, budget);
         Ok(())
     }
 }
@@ -161,16 +180,22 @@ pub struct InitializeCampaign<'info> {
     #[account(
         init,
         payer = authority,
-        space = Campaign::space(&campaign_id),
+        space = Campaign::SPACE,
         seeds = [b"campaign", authority.key().as_ref(), campaign_id.as_bytes()],
         bump
     )]
     pub campaign: Account<'info, Campaign>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = client_token_account.mint == USDC_MINT @ EscrowError::InvalidMint
+    )]
     pub client_token_account: Account<'info, TokenAccount>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = vault.mint == USDC_MINT @ EscrowError::InvalidMint
+    )]
     pub vault: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
@@ -199,10 +224,16 @@ pub struct CompleteCampaign<'info> {
     )]
     pub campaign: Account<'info, Campaign>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = vault.mint == USDC_MINT @ EscrowError::InvalidMint
+    )]
     pub vault: Account<'info, TokenAccount>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = platform_token_account.mint == USDC_MINT @ EscrowError::InvalidMint
+    )]
     pub platform_token_account: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
@@ -218,10 +249,16 @@ pub struct CancelCampaign<'info> {
     #[account(mut)]
     pub campaign: Account<'info, Campaign>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = vault.mint == USDC_MINT @ EscrowError::InvalidMint
+    )]
     pub vault: Account<'info, TokenAccount>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = client_token_account.mint == USDC_MINT @ EscrowError::InvalidMint
+    )]
     pub client_token_account: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
@@ -242,17 +279,17 @@ pub struct Campaign {
 }
 
 impl Campaign {
-    fn space(campaign_id: &str) -> usize {
+    /// Fixed allocation using max campaign_id length (64 chars) to prevent under-allocation
+    const SPACE: usize =
         8 +                          // discriminator
         32 +                         // authority
         32 +                         // platform
-        4 + campaign_id.len() +      // campaign_id (string)
+        4 + MAX_CAMPAIGN_ID +        // campaign_id (string, max 64)
         8 +                          // budget
         1 +                          // deliverables_expected
         1 +                          // deliverables_submitted
         1 +                          // status
-        1                            // bump
-    }
+        1;                           // bump
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
@@ -294,4 +331,6 @@ pub enum EscrowError {
     CannotCancelWithDeliverables,
     #[msg("Unauthorized")]
     Unauthorized,
+    #[msg("Invalid token mint: must be USDC")]
+    InvalidMint,
 }

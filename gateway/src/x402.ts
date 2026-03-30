@@ -1,6 +1,6 @@
 import { Keypair } from "@solana/web3.js";
 import { ExactSvmScheme } from "@x402/svm/exact/server";
-import { SOLANA_DEVNET_CAIP2 } from "@x402/svm";
+import { SOLANA_DEVNET_CAIP2, SOLANA_MAINNET_CAIP2 } from "@x402/svm";
 import { paymentMiddlewareFromConfig } from "@x402/express";
 import type { SchemeRegistration } from "@x402/express";
 import { config } from "./config.js";
@@ -14,22 +14,33 @@ import { config } from "./config.js";
  *   3. Client constructs Solana USDC payment, retries with X-PAYMENT header
  *   4. Middleware verifies via facilitator, settles on-chain, passes to route handler
  *   5. Route handler deploys the marketing team
+ *
+ * Security: platformKeypair NEVER leaves this module. Only the public address is exported.
  */
+
+// Platform wallet — isolated in this module, never exported
+const platformKeypair = process.env.SOLANA_WALLET_PRIVATE_KEY
+  ? Keypair.fromSecretKey(
+      Uint8Array.from(JSON.parse(process.env.SOLANA_WALLET_PRIVATE_KEY))
+    )
+  : (() => {
+      if (process.env.NODE_ENV === "production") {
+        throw new Error("SOLANA_WALLET_PRIVATE_KEY is required in production");
+      }
+      console.warn("[x402] WARNING: No wallet key set — generating ephemeral devnet keypair. Funds will be lost on restart.");
+      return Keypair.generate();
+    })();
+
+export const platformAddress = platformKeypair.publicKey.toBase58();
+
 export function createX402Middleware() {
-  // Platform wallet — receives USDC payments
-  const platformKeypair = process.env.SOLANA_WALLET_PRIVATE_KEY
-    ? Keypair.fromSecretKey(
-        Uint8Array.from(JSON.parse(process.env.SOLANA_WALLET_PRIVATE_KEY))
-      )
-    : Keypair.generate(); // Devnet placeholder
-
-  const platformAddress = platformKeypair.publicKey.toBase58();
-
   // Price in USD string format
   const priceUsdc = `$${(config.campaignPriceUsdcMicro / 1_000_000).toFixed(2)}`;
 
-  // Network as template literal type to satisfy `${string}:${string}`
-  const network = SOLANA_DEVNET_CAIP2 as `${string}:${string}`;
+  // Network — configurable via env
+  const network = (config.solanaNetwork === "mainnet"
+    ? SOLANA_MAINNET_CAIP2
+    : SOLANA_DEVNET_CAIP2) as `${string}:${string}`;
 
   // Routes config — Record<"METHOD /path", RouteConfig>
   const routes = {
@@ -53,14 +64,14 @@ export function createX402Middleware() {
   ];
 
   console.log(`[x402] Platform wallet: ${platformAddress}`);
-  console.log(`[x402] Campaign price: ${priceUsdc} USDC on Solana devnet`);
+  console.log(`[x402] Campaign price: ${priceUsdc} USDC on Solana ${config.solanaNetwork}`);
 
   // Create middleware — handles 402 responses and payment verification automatically
   const middleware = paymentMiddlewareFromConfig(
     routes,
-    undefined,    // no custom facilitator client (uses default CDP facilitator)
+    undefined,    // uses default CDP facilitator
     schemes,
   );
 
-  return { middleware, platformAddress, platformKeypair };
+  return middleware;
 }

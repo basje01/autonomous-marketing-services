@@ -2,16 +2,14 @@ import express from "express";
 import { config } from "./config.js";
 import { createCompany, hireAgents, createInitialTask, AGENT_ROLES } from "./paperclip-client.js";
 import { initializeCampaign } from "./escrow-client.js";
-import { createX402Middleware } from "./x402.js";
-import { Keypair } from "@solana/web3.js";
+import { createX402Middleware, platformAddress } from "./x402.js";
 import crypto from "node:crypto";
 
 const app = express();
 app.use(express.json({ limit: "10kb" }));
 
 // x402 payment gate — returns 402 for unpaid requests to protected routes
-const { middleware: x402, platformKeypair } = createX402Middleware();
-app.use(x402);
+app.use(createX402Middleware());
 
 /**
  * Health check — reports gateway status only, no internal URLs exposed.
@@ -34,11 +32,12 @@ app.get("/api/health", (_req, res) => {
  *   5. Return company dashboard URL
  *
  * The x402 middleware intercepts this route. If the client has not paid,
- * it returns 402 Payment Required with pricing details. The client
- * constructs a Solana USDC payment and retries with X-PAYMENT header.
- * Only paid requests reach this handler.
+ * it returns 402 Payment Required with pricing details. Only paid requests
+ * reach this handler.
  */
 app.post("/api/deploy-marketing-team", async (req, res) => {
+  const campaignId = crypto.randomUUID();
+
   try {
     const { projectName, description, targetAudience, website } = req.body;
 
@@ -69,13 +68,11 @@ app.post("/api/deploy-marketing-team", async (req, res) => {
       }
     }
 
-    const campaignId = crypto.randomUUID();
-
     // Step 1: Initialize escrow on Solana
     console.log(`[gateway] Initializing campaign escrow: ${campaignId}`);
     const deliverablesExpected = AGENT_ROLES.filter(r => r.role !== "CEO").length;
     await initializeCampaign({
-      clientKeypair: platformKeypair,
+      platformAddress,
       campaignId,
       budgetUsdcMicro: config.campaignPriceUsdcMicro,
       deliverablesExpected,
@@ -123,9 +120,15 @@ app.post("/api/deploy-marketing-team", async (req, res) => {
       message: `Autonomous marketing team deployed for ${projectName}. ${agents.length} agents hired and strategist is beginning research.`,
     });
   } catch (error) {
-    console.error("[gateway] Deploy failed:", error);
+    // Payment was already settled by x402 — log for manual reconciliation
+    const errorId = crypto.randomUUID();
+    console.error(`[gateway] Deploy failed [${errorId}] campaignId=${campaignId}:`, error);
+    console.error(`[gateway] PAYMENT TAKEN BUT DEPLOY FAILED — campaignId=${campaignId} errorId=${errorId} — MANUAL INTERVENTION REQUIRED`);
     res.status(500).json({
       error: "Failed to deploy marketing team",
+      campaignId,
+      errorId,
+      refundStatus: "pending_manual_review",
     });
   }
 });
