@@ -1,0 +1,42 @@
+schema: paperclip/v1
+
+agents:
+  atlas:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-opus-4-6
+        maxTurnsPerRun: 20
+        timeoutSec: 600
+
+  sentinel:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 25
+        timeoutSec: 900
+
+  oracle:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 15
+        timeoutSec: 600
+
+  iris:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 20
+        timeoutSec: 600
+
+  chronos:
+    adapter:
+      type: claude_local
+      config:
+        model: claude-sonnet-4-6
+        maxTurnsPerRun: 25
+        timeoutSec: 900
