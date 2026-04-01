@@ -13,6 +13,9 @@ agents:
         COLOSSEUM_COPILOT_PAT:
           kind: secret
           requirement: required
+        INTEL_API_KEY:
+          kind: secret
+          requirement: required
 
   chief-of-staff:
     adapter:
@@ -21,6 +24,11 @@ agents:
         model: claude-sonnet-4-6
         maxTurnsPerRun: 20
         timeoutSec: 600
+    inputs:
+      env:
+        INTEL_API_KEY:
+          kind: secret
+          requirement: required
 
   seo-agent:
     adapter:
