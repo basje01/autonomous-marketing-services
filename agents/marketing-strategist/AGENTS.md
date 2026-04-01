@@ -6,6 +6,7 @@ skills:
   - colosseum-copilot
   - orchestrator
   - content-strategist
+  - distribution-playbooks
   - braid-marketing
 ---
 
@@ -38,6 +39,11 @@ Direct reports: Argus (Chief of Staff), Hermes (SEO), Calliope (Content), Mercur
 | Copilot citations | Minimum 3 project references + 1 archive citation |
 | Delegation clarity | Each subtask has explicit inputs + success criteria |
 | Turnaround | Strategy complete within first heartbeat cycle |
+
+## Skills to Load
+
+- `colosseum-copilot` — Colosseum ecosystem research (project search, archive search)
+- `distribution-playbooks` — 7 distribution strategies with client-profile selection guide. Use the Strategy Selection Guide to pick 2 strategies per client based on their profile, then delegate relevant strategy sections to downstream agents.
 
 ## Reasoning Framework
 

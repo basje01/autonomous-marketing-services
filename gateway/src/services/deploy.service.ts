@@ -6,8 +6,10 @@ import {
   readCampaignAuditBundle,
   summarizeAuditTrail,
 } from "../audit-trail.js";
+import { validateSupportedDeployRequest } from "../deploy-validation.js";
 import { createCompany, hireAgents, createInitialTask } from "../paperclip-client.js";
 import { initializeCampaign } from "../escrow-client.js";
+import type { CampaignFundingData } from "../escrow-client.js";
 import { AppError } from "../errors.js";
 import type { DeployRequest } from "../schemas.js";
 
@@ -27,6 +29,7 @@ export interface DeployResult {
   agents: { id: string; name: string }[];
   initialTask: { id: string; identifier: string };
   message: string;
+  funding: CampaignFundingData;
   audit: DeployAuditSummary;
 }
 
@@ -38,12 +41,11 @@ export async function deployMarketingTeam(
   input: DeployRequest,
   platformAddress: string,
 ): Promise<DeployResult> {
+  const supportedPlan = validateSupportedDeployRequest(input);
   const campaignId = crypto.randomUUID();
-  const budgetUsdc =
-    input.budgetUsdc ?? config.campaignPriceUsdcMicro / 1_000_000;
-  const milestones = input.milestones;
-  const deliverablesExpected =
-    milestones?.length ?? config.deliverablesExpected;
+  const budgetUsdc = supportedPlan.budgetUsdc;
+  const budgetUsdcMicro = supportedPlan.budgetUsdcMicro;
+  const deliverablesExpected = supportedPlan.deliverablesExpected;
   const kaminoEnabled = Boolean(config.kaminoLendingMarket && config.kaminoUsdcReserve);
 
   await createCampaignAuditTrail({
@@ -52,9 +54,10 @@ export async function deployMarketingTeam(
       platformAddress,
       projectName: input.projectName,
       budgetUsdc,
+      budgetUsdcMicro,
       deliverablesExpected,
       kaminoEnabled,
-      milestones: milestones ?? [],
+      milestonesSupported: false,
     },
   });
 
@@ -69,20 +72,20 @@ export async function deployMarketingTeam(
       targetAudience: input.targetAudience,
       website: input.website ?? null,
       budgetUsdc,
+      budgetUsdcMicro,
       deliverablesExpected,
       kaminoEnabled,
-      milestoneCount: milestones?.length ?? 0,
+      milestoneCount: 0,
     },
   });
 
   try {
     // Step 1: Initialize escrow
-    await initializeCampaign({
+    const funding = await initializeCampaign({
       platformAddress,
       campaignId,
-      budgetUsdcMicro: Math.round(budgetUsdc * 1_000_000),
+      budgetUsdcMicro,
       deliverablesExpected,
-      milestones,
       kamino: kaminoEnabled
         ? {
             programId: config.kaminoProgramId,
@@ -97,13 +100,9 @@ export async function deployMarketingTeam(
       actor: "gateway.escrow",
       nodeId: "B",
       nodeLabel: "Initialize Escrow",
-      event: "escrow.initialized",
+      event: "escrow.funded",
       status: "succeeded",
-      payload: {
-        budgetUsdcMicro: Math.round(budgetUsdc * 1_000_000),
-        deliverablesExpected,
-        kaminoEnabled,
-      },
+      payload: { ...funding },
     });
 
     await appendCampaignAuditEntry(campaignId, {
@@ -115,6 +114,7 @@ export async function deployMarketingTeam(
       payload: {
         active: true,
         kaminoEnabled,
+        budgetUsdcMicro,
       },
     });
 
@@ -237,6 +237,7 @@ export async function deployMarketingTeam(
       agents: agents.map((a) => ({ id: a.id, name: a.name })),
       initialTask: { id: task.id, identifier: task.identifier },
       message: `Autonomous marketing team deployed for ${input.projectName}. ${agents.length} agents hired and Minerva is beginning research.`,
+      funding,
       audit: {
         ...summarizeAuditTrail(auditBundle.trail),
         verified: auditBundle.verification.valid,

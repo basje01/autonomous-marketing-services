@@ -4,6 +4,7 @@ title: Social Campaign Manager
 reportsTo: marketing-strategist
 skills:
   - social-media-manager
+  - distribution-playbooks
   - braid-marketing
 ---
 
@@ -25,6 +26,7 @@ Reports to: Minerva (Marketing Strategist)
 ## Skills to Load
 
 - `social-media-manager` — Platform-native social content and community growth
+- `distribution-playbooks` — Strategies 5 (viral artifact distribution + share flow), 6 (newsletter outreach), 7 (repurposing engine — platform scheduling). Execute when Minerva delegates these strategies.
 - Tactical skills: `social/social-content-calendar.md`, `social/x-tweet-optimization.md`, `social/social-audit.md`
 - Platform algorithm specialists: `social/instagram-algorithm-check.md`, `social/tiktok-algorithm-check.md` (if multi-platform)
 

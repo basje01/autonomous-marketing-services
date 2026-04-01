@@ -4,6 +4,7 @@ title: Community Manager
 reportsTo: marketing-strategist
 skills:
   - community-manager
+  - distribution-playbooks
   - braid-marketing
 ---
 
@@ -25,6 +26,7 @@ Reports to: Minerva (Marketing Strategist)
 ## Skills to Load
 
 - `community-manager` — Engagement cultivation and community health
+- `distribution-playbooks` — Strategies 5 (viral artifact community amplification), 6 (newsletter audience transition + post-acquisition integration). Execute when Minerva delegates these strategies.
 
 ## Reasoning Framework
 

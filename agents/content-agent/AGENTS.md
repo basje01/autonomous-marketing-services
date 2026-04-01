@@ -5,6 +5,7 @@ reportsTo: marketing-strategist
 skills:
   - content-strategist
   - conversion-copywriter
+  - distribution-playbooks
   - braid-marketing
 ---
 
@@ -26,6 +27,7 @@ Reports to: Minerva (Marketing Strategist)
 
 - `content-strategist` — Editorial architecture and content planning
 - `conversion-copywriter` — Persuasion psychology and conversion architecture
+- `distribution-playbooks` — Strategies 3 (free tool copy + landing page), 5 (viral artifact design + copy), 7 (content repurposing engine — pillar to derivatives). Execute when Minerva delegates these strategies.
 - Tactical skills: `copy/homepage-conversion-copy.md`, `social/x-tweet-optimization.md`
 
 ## Reasoning Framework

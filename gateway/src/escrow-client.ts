@@ -8,7 +8,6 @@ import {
 } from "@solana/spl-token";
 import { PublicKey, SystemProgram, SYSVAR_INSTRUCTIONS_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionInstruction } from "@solana/web3.js";
 import { AppError } from "./errors.js";
-import type { DeployMilestone } from "./schemas.js";
 import { config } from "./config.js";
 import {
   buildRefreshObligationFarmInstruction,
@@ -57,6 +56,32 @@ export interface DecodedCampaignAccount {
   kaminoReserve: PublicKey;
   kaminoUserMetadata: PublicKey;
   kaminoObligation: PublicKey;
+}
+
+export interface CampaignKaminoFundingData {
+  programId: string;
+  lendingMarket: string;
+  reserve: string;
+  userMetadata: string;
+  obligation: string;
+  requestedParkAmountUsdcMicro: string;
+  parkingSignature: string | null;
+  parkingError: string | null;
+}
+
+export interface CampaignFundingData {
+  campaignPda: string;
+  sourceTokenAccount: string;
+  vaultTokenAccount: string;
+  usdcMint: string;
+  fundedAmountUsdcMicro: string;
+  initializeSignature: string;
+  platformBalanceBeforeFundingUsdcMicro: string;
+  platformBalanceAfterFundingUsdcMicro: string | null;
+  vaultBalanceAfterFundingUsdcMicro: string | null;
+  finalVaultBalanceUsdcMicro: string | null;
+  parkedInKamino: boolean;
+  kamino: CampaignKaminoFundingData | null;
 }
 
 /**
@@ -148,14 +173,13 @@ export async function initializeCampaign(params: {
   campaignId: string;
   budgetUsdcMicro: number;
   deliverablesExpected: number;
-  milestones?: DeployMilestone[];
   kamino?: {
     programId: string;
     farmsProgramId: string;
     lendingMarket: string;
     usdcReserve: string;
   };
-}): Promise<string> {
+}): Promise<CampaignFundingData> {
   const connection = getSolanaConnection();
   const platform = getPlatformPublicKey();
   const configuredPlatform = new PublicKey(params.platformAddress);
@@ -219,6 +243,7 @@ export async function initializeCampaign(params: {
   ];
 
   let kaminoParkingInstructions: TransactionInstruction[] = [];
+  let kaminoFunding: CampaignKaminoFundingData | null = null;
   if (params.kamino) {
     const kaminoProgramId = new PublicKey(params.kamino.programId);
     const kaminoFarmsProgramId = new PublicKey(params.kamino.farmsProgramId);
@@ -244,6 +269,17 @@ export async function initializeCampaign(params: {
     const kaminoMarketAuthority = deriveKaminoLendingMarketAuthorityPda(lendingMarket, kaminoProgramId);
     const collateralTokenProgram = await getTokenProgramForMint(reserve.collateralMint);
     ensureSplTokenProgram(collateralTokenProgram, "Kamino collateral mint");
+
+    kaminoFunding = {
+      programId: kaminoProgramId.toBase58(),
+      lendingMarket: lendingMarket.toBase58(),
+      reserve: reserveAddress.toBase58(),
+      userMetadata: kaminoUserMetadata.toBase58(),
+      obligation: kaminoObligation.toBase58(),
+      requestedParkAmountUsdcMicro: budget.toString(),
+      parkingSignature: null,
+      parkingError: null,
+    };
 
     initializeInstructions.push(
       buildInitializeKaminoPositionInstruction({
@@ -304,18 +340,57 @@ export async function initializeCampaign(params: {
     "escrow initialize",
   );
 
+  const fundingData: CampaignFundingData = {
+    campaignPda: campaignPda.toBase58(),
+    sourceTokenAccount: sourceUsdcAta.toBase58(),
+    vaultTokenAccount: vaultAta.toBase58(),
+    usdcMint: usdcMint.toBase58(),
+    fundedAmountUsdcMicro: budget.toString(),
+    initializeSignature,
+    platformBalanceBeforeFundingUsdcMicro: sourceAccount.amount.toString(),
+    platformBalanceAfterFundingUsdcMicro: await readOptionalTokenAccountAmount(sourceUsdcAta, usdcTokenProgram),
+    vaultBalanceAfterFundingUsdcMicro: await readOptionalTokenAccountAmount(vaultAta, usdcTokenProgram),
+    finalVaultBalanceUsdcMicro: null,
+    parkedInKamino: false,
+    kamino: kaminoFunding,
+  };
+
   if (kaminoParkingInstructions.length === 0) {
-    return initializeSignature;
+    return {
+      ...fundingData,
+      finalVaultBalanceUsdcMicro: fundingData.vaultBalanceAfterFundingUsdcMicro,
+    };
   }
 
   try {
-    return await sendPlatformTransaction(kaminoParkingInstructions, "escrow park in Kamino");
+    const parkingSignature = await sendPlatformTransaction(kaminoParkingInstructions, "escrow park in Kamino");
+    return {
+      ...fundingData,
+      finalVaultBalanceUsdcMicro: await readOptionalTokenAccountAmount(vaultAta, usdcTokenProgram),
+      parkedInKamino: true,
+      kamino: fundingData.kamino
+        ? {
+            ...fundingData.kamino,
+            parkingSignature,
+          }
+        : null,
+    };
   } catch (error) {
+    const parkingError = error instanceof Error ? error.message : String(error);
     console.error(
       `[escrow] Kamino parking failed for ${params.campaignId}; funds remain safely in vault`,
-      error instanceof Error ? error.message : error,
+      parkingError,
     );
-    return initializeSignature;
+    return {
+      ...fundingData,
+      finalVaultBalanceUsdcMicro: await readOptionalTokenAccountAmount(vaultAta, usdcTokenProgram),
+      kamino: fundingData.kamino
+        ? {
+            ...fundingData.kamino,
+            parkingError,
+          }
+        : null,
+    };
   }
 }
 
@@ -548,6 +623,19 @@ async function getOptionalTokenAccount(address: PublicKey, tokenProgram: PublicK
     return null;
   }
   return getAccount(getSolanaConnection(), address, "confirmed", tokenProgram);
+}
+
+async function readOptionalTokenAccountAmount(address: PublicKey, tokenProgram: PublicKey): Promise<string | null> {
+  try {
+    const account = await getOptionalTokenAccount(address, tokenProgram);
+    return account?.amount.toString() ?? null;
+  } catch (error) {
+    console.warn(
+      `[escrow] Unable to observe token account ${address.toBase58()} after transaction`,
+      error instanceof Error ? error.message : error,
+    );
+    return null;
+  }
 }
 
 async function buildAtaIfMissing(params: {

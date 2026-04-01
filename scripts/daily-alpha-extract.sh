@@ -143,8 +143,8 @@ echo "[alpha] Running claude -p extraction (Sonnet, ~36K tokens)..."
 
 "$CLAUDE_BIN" -p \
   --model sonnet \
-  --system-prompt "$(cat scripts/alpha-extract-prompt.md)" \
-  --max-turns 3 \
+  --system-prompt-file scripts/alpha-extract-prompt.md \
+  --max-budget-usd 0.50 \
   "$(cat "$STAGING")" \
   > "$DIGEST_OUT" 2>/tmp/alpha-extract-error.log || true
 
