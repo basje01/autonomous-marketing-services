@@ -134,7 +134,11 @@ async function hireOne(companyId: string, role: typeof AGENT_ROLES[number]) {
         model: role.model,
         maxTurnsPerRun: role.maxTurns,
         timeoutSec: role.timeoutSec,
-        args: ["--add-dir", skillsDir, "--permission-mode", "acceptEdits"],
+        args: [
+          "--add-dir", skillsDir,
+          "--permission-mode", "acceptEdits",
+          "--allowedTools", "Read Glob Grep WebSearch WebFetch ToolSearch Bash(npm:*) Bash(npx:*) Bash(git:*)",
+        ],
       },
     }),
   });
