@@ -79,6 +79,7 @@ curl -s -X POST https://intel.lemuriaos.ai/api/intel/mcp \
 2. Parse BRAID briefing for actionable signals
 3. For each signal: create a GitHub issue with `intel` label
 4. Send feedback (`up`/`down`) on items used in issues
+5. For feed items with `metadata.hasVideo === true`: download `metadata.videoUrl` and transcribe with Whisper (skip if `metadata.videoDurationSec < 30`)
 
 ### Minerva (Marketing Strategist)
 1. Before Copilot research, fetch intel feed for the client's URL
