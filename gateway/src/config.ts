@@ -39,6 +39,9 @@ export const config = {
   // Paperclip
   paperclipApiUrl: env.PAPERCLIP_API_URL,
 
+  // Twitter intel
+  twitterApiKey: env.TWITTERAPI_IO_KEY,
+
   // CORS
   corsOrigin: env.CORS_ORIGIN,
 } as const;

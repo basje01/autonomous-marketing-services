@@ -1,0 +1,16 @@
+{
+  "description": "Monitored X/Twitter accounts for daily intelligence feed",
+  "accounts": [
+    { "username": "dotta", "tags": ["builder", "paperclip"] },
+    { "username": "gregisenberg", "tags": ["builder", "community"] },
+    { "username": "startupideaspod", "tags": ["content", "ideas"] },
+    { "username": "Helius", "tags": ["solana", "infrastructure", "rpc"] },
+    { "username": "colosseum", "tags": ["hackathon", "solana", "accelerator"] },
+    { "username": "mattytay", "tags": ["colosseum", "founder", "solana"] },
+    { "username": "crabbylions", "tags": ["colosseum", "founder"] },
+    { "username": "n8levine", "tags": ["colosseum", "founder"] },
+    { "username": "SolanaFndn", "tags": ["solana", "foundation"] },
+    { "username": "aeyakovenko", "tags": ["solana", "founder", "toly"] },
+    { "username": "solana", "tags": ["solana", "ecosystem"] }
+  ]
+}

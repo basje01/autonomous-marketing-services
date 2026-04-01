@@ -31,6 +31,9 @@ export const envSchema = z.object({
   // Paperclip
   PAPERCLIP_API_URL: z.string().url().default("http://localhost:3100"),
 
+  // Twitter intel
+  TWITTERAPI_IO_KEY: z.string().min(1).optional(),
+
   // CORS
   CORS_ORIGIN: z.string().optional(),
 });
