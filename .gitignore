@@ -22,3 +22,10 @@ Thumbs.db
 
 # Anchor
 test-ledger/
+
+# Claude Code
+.claude/
+
+# Launchd logs
+launchd.log
+launchd-error.log
