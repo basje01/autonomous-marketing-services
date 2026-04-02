@@ -116,6 +116,7 @@ export const AGENT_ROLES = [
 
 const agentsDir = new URL("../../agents", import.meta.url).pathname;
 const skillsDir = new URL("../../skills", import.meta.url).pathname;
+const intelDir = new URL("../../intel", import.meta.url).pathname;
 
 async function hireOne(companyId: string, role: typeof AGENT_ROLES[number]) {
   const res = await fetch(`${API}/api/companies/${companyId}/agents`, {
@@ -136,8 +137,9 @@ async function hireOne(companyId: string, role: typeof AGENT_ROLES[number]) {
         timeoutSec: role.timeoutSec,
         args: [
           "--add-dir", skillsDir,
+          "--add-dir", intelDir,
           "--permission-mode", "acceptEdits",
-          "--allowedTools", "Read Glob Grep WebSearch WebFetch ToolSearch Bash(npm:*) Bash(npx:*) Bash(git:*)",
+          "--allowedTools", "Read Glob Grep WebSearch WebFetch ToolSearch Bash(curl:*) Bash(npm:*) Bash(npx:*) Bash(git:*)",
         ],
       },
     }),
