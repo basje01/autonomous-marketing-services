@@ -72,14 +72,56 @@ curl -s -X POST https://intel.lemuriaos.ai/api/intel/mcp \
   -d '{"tool":"intel_hub_feedback","input":{"item_id":"ITEM_ID","signal":"up","context":"relevant to campaign strategy"}}'
 ```
 
+### Transcripts (Video Intelligence)
+
+For feed items with video, the Intel Hub automatically transcribes using whisper-large-v3 with speaker diarization. No local processing needed.
+
+```bash
+curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
+  "https://intel.lemuriaos.ai/api/intel/feed/{itemId}/transcript"
+```
+
+**Query params (optional):**
+- `speaker` — filter by speaker ID (e.g. `SPEAKER_00`)
+- `from` / `to` — time range in seconds (e.g. `from=30&to=60`)
+
+**Response:**
+```json
+{
+  "ok": true,
+  "language": "en",
+  "languageConfidence": 0.5,
+  "fullText": "The complete transcript...",
+  "fullTextEn": null,
+  "modelUsed": "whisper-large-v3",
+  "segments": [
+    {
+      "index": 0,
+      "start": 0,
+      "end": 1.6,
+      "speaker": "SPEAKER_00",
+      "speakerName": "@handle",
+      "text": "Segment text...",
+      "confidence": 0.5
+    }
+  ]
+}
+```
+
+**Status responses:**
+- `{ "ok": false, "error": "transcript_not_ready", "status": "processing" }` — still transcribing
+- `{ "ok": false, "error": "transcript_not_found" }` — not yet queued for processing
+
+**Features:** Speaker diarization (pyannote), speaker name resolution from tweet author, auto-translation for non-English content, audio fingerprint deduplication across reposts.
+
 ## Agent Workflows
 
 ### Argus (Chief of Staff)
 1. Fetch daily digest for `https://colosseum.org`
 2. Parse BRAID briefing for actionable signals
-3. For each signal: create a GitHub issue with `intel` label
-4. Send feedback (`up`/`down`) on items used in issues
-5. For feed items with `metadata.hasVideo === true`: download `metadata.videoUrl` and transcribe with Whisper (skip if `metadata.videoDurationSec < 30`)
+3. For feed items with `metadata.hasVideo === true` and `videoDurationSec >= 30`: fetch transcript via `GET /api/intel/feed/{id}/transcript`. If `transcript_not_ready`, retry next cycle. Include speaker-labeled quotes in issue body.
+4. For each actionable signal: create a GitHub issue with `intel` label
+5. Send feedback (`up`/`down`) on items used in issues
 
 ### Minerva (Marketing Strategist)
 1. Before Copilot research, fetch intel feed for the client's URL

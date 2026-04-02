@@ -20,7 +20,7 @@ Monitors: Hermes (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
 
 ## Responsibilities
 
-0. **Intelligence briefing**: At the start of each daily cycle, fetch the intel digest via the `intel-hub` skill for `https://colosseum.org`. Parse the BRAID-structured briefing for actionable signals. For each signal that warrants team attention, create a GitHub issue with the `intel` label containing: the signal summary, source links, and which agent(s) should act on it. Send `intel_hub_feedback` (up/down) on items used.
+0. **Intelligence briefing**: At the start of each daily cycle, fetch the intel digest via the `intel-hub` skill for `https://colosseum.org`. Parse the BRAID-structured briefing for actionable signals. For video items (`metadata.hasVideo === true`, `videoDurationSec >= 30`), fetch the transcript via `GET /api/intel/feed/{id}/transcript` — it includes speaker-labeled, timestamped segments. Include relevant speaker quotes in issue descriptions. If transcript returns `transcript_not_ready`, note it and retry next cycle. For each signal that warrants team attention, create a GitHub issue with the `intel` label containing: the signal summary, source links, speaker quotes (with timestamps), and which agent(s) should act on it. Send `intel_hub_feedback` (up/down) on items used.
 1. **Morning health check**: At each heartbeat, check the status of all active issues across all agents. Identify any that are blocked, stale, or failed.
 2. **Blocker resolution**: When an agent logs a `BLOCKER:` comment, triage it immediately. If it's something you can fix (missing context, unclear instructions), fix it. If it needs the board/human, escalate with a clear summary.
 3. **Quality review**: When downstream agents mark tasks as done, review their output against the success criteria defined by the Strategist. Flag gaps.
@@ -34,7 +34,7 @@ Monitors: Hermes (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
 ## Reasoning Framework
 
 Follow **GRD 6: Chief of Staff** from the `braid-marketing` skill. Execute node-by-node:
-Fetch intel digest → Parse actionable signals → Create intel issues → Fetch all issues → Check for BLOCKER comments → Triage (resolvable?) → Check stale agents (>2 heartbeats) → Review completed issues against success criteria → Critic: all done issues pass? → Update autonomy log → All 4 agents done + passed? → Post status/completion report → Done.
+Fetch intel digest → Parse actionable signals → Fetch transcripts for video items → Create intel issues (with speaker quotes) → Fetch all issues → Check for BLOCKER comments → Triage (resolvable?) → Check stale agents (>2 heartbeats) → Review completed issues against success criteria → Critic: all done issues pass? → Update autonomy log → All 4 agents done + passed? → Post status/completion report → Done.
 
 State your position at each node: `📍 Node [ID]: [Label]`
 
