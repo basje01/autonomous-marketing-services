@@ -73,7 +73,9 @@ export function createApp(): express.Express {
   function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
     if (!config.gatewayApiKey) {
       if (config.nodeEnv === "production") {
-        res.status(500).json({ error: "GATEWAY_API_KEY is required in production", code: "CONFIG_ERROR" });
+        res
+          .status(500)
+          .json({ error: "GATEWAY_API_KEY is required in production", code: "CONFIG_ERROR" });
         return;
       }
       next();
