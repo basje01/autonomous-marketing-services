@@ -26,10 +26,15 @@ export function createApp(): express.Express {
   const app = express();
 
   // Security
-  app.use(helmet());
+  app.use(
+    helmet({
+      hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+      contentSecurityPolicy: false, // API-only, no HTML served
+    }),
+  );
   app.use(
     cors({
-      origin: config.corsOrigin?.split(",").map((s) => s.trim()) || ["http://localhost:3000"],
+      origin: (config.corsOrigin?.split(",").map((s) => s.trim()) ?? []).filter(Boolean),
       methods: ["GET", "POST"],
     }),
   );
@@ -67,6 +72,10 @@ export function createApp(): express.Express {
   // Optional API key auth for sensitive endpoints (C7)
   function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
     if (!config.gatewayApiKey) {
+      if (config.nodeEnv === "production") {
+        res.status(500).json({ error: "GATEWAY_API_KEY is required in production", code: "CONFIG_ERROR" });
+        return;
+      }
       next();
       return;
     }
@@ -384,5 +393,8 @@ export function createApp(): express.Express {
 }
 
 function getIdempotencyKey(rawKey: unknown): string | undefined {
-  return typeof rawKey === "string" ? rawKey.slice(0, 128) : undefined;
+  if (typeof rawKey !== "string") return undefined;
+  if (rawKey.length > 128) return undefined;
+  if (!/^[a-zA-Z0-9_-]+$/.test(rawKey)) return undefined;
+  return rawKey;
 }

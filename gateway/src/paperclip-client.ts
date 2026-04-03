@@ -155,7 +155,7 @@ async function hireOne(companyId: string, role: (typeof AGENT_ROLES)[number]) {
           "--permission-mode",
           "acceptEdits",
           "--allowedTools",
-          "Read Glob Grep WebSearch WebFetch ToolSearch Bash(curl:*) Bash(npm:*) Bash(npx:*) Bash(git:*) mcp__firecrawl__firecrawl_scrape mcp__firecrawl__firecrawl_map mcp__firecrawl__firecrawl_crawl mcp__firecrawl__firecrawl_search mcp__firecrawl__firecrawl_agent",
+          "Read Glob Grep WebSearch WebFetch ToolSearch Bash(curl:https://intel.lemuriaos.ai/*) Bash(curl:https://api.firecrawl.dev/*) Bash(npm:list) Bash(npx:tsx:*) Bash(git:status) Bash(git:log:*) Bash(git:diff:*) mcp__firecrawl__firecrawl_scrape mcp__firecrawl__firecrawl_map mcp__firecrawl__firecrawl_crawl mcp__firecrawl__firecrawl_search mcp__firecrawl__firecrawl_agent",
         ],
       },
     }),
