@@ -4,6 +4,7 @@ title: SEO Specialist
 reportsTo: marketing-strategist
 skills:
   - technical-seo-specialist
+  - firecrawl
   - distribution-playbooks
   - braid-marketing
 ---
@@ -29,6 +30,12 @@ Reports to: Minerva (Marketing Strategist)
 - `technical-seo-specialist` — Deep technical SEO expertise, JSON-LD, entity SEO
 - `distribution-playbooks` — Strategies 1 (MCP server spec), 2 (programmatic SEO architecture), 4 (AEO schema + structured answers). Execute when Minerva delegates these strategies.
 - Tactical skills from `seo/` directory: `keyword-research.md`, `title-tags.md`, `structured-data.md`, `content-brief.md`, `site-scanner.md`
+- **Firecrawl MCP tools** (available via MCP server):
+  - `firecrawl_scrape` — Extract clean markdown from any URL (use for competitor analysis, site audits)
+  - `firecrawl_map` — Discover all URLs on a domain (use for site structure audit)
+  - `firecrawl_crawl` — Multi-page extraction (use for full site content analysis)
+  - `firecrawl_search` — Web search with structured data extraction
+  - `firecrawl_agent` — Complex multi-source research tasks
 
 ## Reasoning Framework
 

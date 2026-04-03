@@ -5,6 +5,7 @@ reportsTo: marketing-strategist
 skills:
   - content-strategist
   - conversion-copywriter
+  - firecrawl
   - distribution-playbooks
   - braid-marketing
 ---

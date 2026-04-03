@@ -126,6 +126,7 @@ export const AGENT_ROLES = [
 const agentsDir = new URL("../../agents", import.meta.url).pathname;
 const skillsDir = new URL("../../skills", import.meta.url).pathname;
 const intelDir = new URL("../../intel", import.meta.url).pathname;
+const mcpConfig = new URL("../../mcp-servers.json", import.meta.url).pathname;
 
 async function hireOne(companyId: string, role: (typeof AGENT_ROLES)[number]) {
   const res = await fetch(`${API}/api/companies/${companyId}/agents`, {
@@ -149,10 +150,12 @@ async function hireOne(companyId: string, role: (typeof AGENT_ROLES)[number]) {
           skillsDir,
           "--add-dir",
           intelDir,
+          "--mcp-config",
+          mcpConfig,
           "--permission-mode",
           "acceptEdits",
           "--allowedTools",
-          "Read Glob Grep WebSearch WebFetch ToolSearch Bash(curl:*) Bash(npm:*) Bash(npx:*) Bash(git:*)",
+          "Read Glob Grep WebSearch WebFetch ToolSearch Bash(curl:*) Bash(npm:*) Bash(npx:*) Bash(git:*) mcp__firecrawl__firecrawl_scrape mcp__firecrawl__firecrawl_map mcp__firecrawl__firecrawl_crawl mcp__firecrawl__firecrawl_search mcp__firecrawl__firecrawl_agent",
         ],
       },
     }),
