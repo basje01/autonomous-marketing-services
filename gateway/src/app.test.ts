@@ -5,7 +5,8 @@ const x402MiddlewareSpy = vi.fn((_req, _res, next: () => void) => next());
 const deployMarketingTeamSpy = vi.fn();
 
 vi.mock("./x402.js", () => ({
-  createX402Middleware: () => (req: unknown, res: unknown, next: () => void) => x402MiddlewareSpy(req, res, next),
+  createX402Middleware: () => (req: unknown, res: unknown, next: () => void) =>
+    x402MiddlewareSpy(req, res, next),
   getPlatformAddress: () => "Platform1111111111111111111111111111111111",
 }));
 
@@ -19,7 +20,11 @@ describe("createApp", () => {
     deployMarketingTeamSpy.mockReset();
     deployMarketingTeamSpy.mockResolvedValue({
       campaignId: "cmp-123",
-      company: { id: "co-1", name: "SolPay Marketing", dashboardUrl: "http://localhost:3100/companies/co-1" },
+      company: {
+        id: "co-1",
+        name: "SolPay Marketing",
+        dashboardUrl: "http://localhost:3100/companies/co-1",
+      },
       agents: [{ id: "agent-1", name: "Minerva" }],
       initialTask: { id: "task-1", identifier: "ISSUE-1" },
       message: "ok",
@@ -53,14 +58,12 @@ describe("createApp", () => {
     const { createApp } = await import("./app.js");
     const app = createApp();
 
-    const response = await request(app)
-      .post("/api/deploy-marketing-team")
-      .send({
-        projectName: "SolPay",
-        description: "A payment gateway on Solana",
-        targetAudience: "Crypto merchants",
-        budgetUsdc: 25,
-      });
+    const response = await request(app).post("/api/deploy-marketing-team").send({
+      projectName: "SolPay",
+      description: "A payment gateway on Solana",
+      targetAudience: "Crypto merchants",
+      budgetUsdc: 25,
+    });
 
     expect(response.status).toBe(400);
     expect(response.body.code).toBe("BUDGET_PRICE_MISMATCH");
@@ -95,10 +98,15 @@ describe("createApp", () => {
   });
 
   it("blocks in-flight idempotent retries before x402 reruns", async () => {
-    let resolveDeploy: ((value: Awaited<ReturnType<typeof deployMarketingTeamSpy>>) => void) | undefined;
-    deployMarketingTeamSpy.mockImplementationOnce(() => new Promise((resolve) => {
-      resolveDeploy = resolve;
-    }));
+    let resolveDeploy:
+      | ((value: Awaited<ReturnType<typeof deployMarketingTeamSpy>>) => void)
+      | undefined;
+    deployMarketingTeamSpy.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveDeploy = resolve;
+        }),
+    );
 
     const { createApp } = await import("./app.js");
     const app = createApp();
@@ -138,7 +146,11 @@ describe("createApp", () => {
 
     resolveDeploy?.({
       campaignId: "cmp-123",
-      company: { id: "co-1", name: "SolPay Marketing", dashboardUrl: "http://localhost:3100/companies/co-1" },
+      company: {
+        id: "co-1",
+        name: "SolPay Marketing",
+        dashboardUrl: "http://localhost:3100/companies/co-1",
+      },
       agents: [{ id: "agent-1", name: "Minerva" }],
       initialTask: { id: "task-1", identifier: "ISSUE-1" },
       message: "ok",

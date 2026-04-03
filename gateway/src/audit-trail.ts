@@ -126,18 +126,20 @@ export async function appendCampaignAuditEntry(
     const previousHash = trail.headHash;
     const index = trail.entries.length;
     const timestamp = new Date().toISOString();
-    const hash = sha256Hex(canonicalStringify({
-      campaignId,
-      index,
-      timestamp,
-      previousHash,
-      actor: entry.actor,
-      event: entry.event,
-      status: entry.status,
-      nodeId: entry.nodeId ?? null,
-      nodeLabel: entry.nodeLabel ?? null,
-      payload: entry.payload,
-    }));
+    const hash = sha256Hex(
+      canonicalStringify({
+        campaignId,
+        index,
+        timestamp,
+        previousHash,
+        actor: entry.actor,
+        event: entry.event,
+        status: entry.status,
+        nodeId: entry.nodeId ?? null,
+        nodeLabel: entry.nodeLabel ?? null,
+        payload: entry.payload,
+      }),
+    );
 
     const nextEntry: AuditTrailEntry = {
       index,
@@ -162,7 +164,11 @@ export async function readCampaignAuditTrail(
   const filePath = getCampaignAuditPath(campaignId, auditDir);
   const content = await readAuditFileIfExists(filePath);
   if (!content) {
-    throw new AppError(`Audit trail for campaign ${campaignId} was not found`, 404, "AUDIT_TRAIL_MISSING");
+    throw new AppError(
+      `Audit trail for campaign ${campaignId} was not found`,
+      404,
+      "AUDIT_TRAIL_MISSING",
+    );
   }
   return content;
 }
@@ -199,18 +205,20 @@ export function verifyCampaignAuditTrail(trail: CampaignAuditTrail): AuditVerifi
       );
     }
 
-    const expectedHash = sha256Hex(canonicalStringify({
-      campaignId: trail.campaignId,
-      index: entry.index,
-      timestamp: entry.timestamp,
-      previousHash: entry.previousHash,
-      actor: entry.actor,
-      event: entry.event,
-      status: entry.status,
-      nodeId: entry.nodeId ?? null,
-      nodeLabel: entry.nodeLabel ?? null,
-      payload: entry.payload,
-    }));
+    const expectedHash = sha256Hex(
+      canonicalStringify({
+        campaignId: trail.campaignId,
+        index: entry.index,
+        timestamp: entry.timestamp,
+        previousHash: entry.previousHash,
+        actor: entry.actor,
+        event: entry.event,
+        status: entry.status,
+        nodeId: entry.nodeId ?? null,
+        nodeLabel: entry.nodeLabel ?? null,
+        payload: entry.payload,
+      }),
+    );
 
     if (entry.hash !== expectedHash) {
       return invalidVerification(trail, `Entry ${index} hash mismatch`);
@@ -331,7 +339,10 @@ function createTrailAttestation(trail: SignableCampaignAuditTrail): AuditTrailAt
   };
 }
 
-function verifyTrailAttestation(attestation: AuditTrailAttestation): { valid: boolean; error: string } {
+function verifyTrailAttestation(attestation: AuditTrailAttestation): {
+  valid: boolean;
+  error: string;
+} {
   try {
     const signer = new PublicKey(attestation.signer);
     const signature = Buffer.from(attestation.signature, "base64");
@@ -354,15 +365,17 @@ function verifyTrailAttestation(attestation: AuditTrailAttestation): { valid: bo
 }
 
 function hashCampaignAuditTrail(trail: SignableCampaignAuditTrail): string {
-  return sha256Hex(canonicalStringify({
-    version: trail.version,
-    campaignId: trail.campaignId,
-    createdAt: trail.createdAt,
-    reasoning: trail.reasoning,
-    metadata: trail.metadata,
-    entries: trail.entries,
-    headHash: trail.headHash,
-  }));
+  return sha256Hex(
+    canonicalStringify({
+      version: trail.version,
+      campaignId: trail.campaignId,
+      createdAt: trail.createdAt,
+      reasoning: trail.reasoning,
+      metadata: trail.metadata,
+      entries: trail.entries,
+      headHash: trail.headHash,
+    }),
+  );
 }
 
 function buildAttestationMessage(trailHash: string, signer: string, signedAt: string): string {

@@ -1,6 +1,10 @@
 import { Keypair } from "@solana/web3.js";
 import { describe, expect, it } from "vitest";
-import { decodeCampaignAccount, deriveCampaignPDA, normalizeDeliverableHash } from "./escrow-client.js";
+import {
+  decodeCampaignAccount,
+  deriveCampaignPDA,
+  normalizeDeliverableHash,
+} from "./escrow-client.js";
 
 const CAMPAIGN_ACCOUNT_DISCRIMINATOR = Buffer.from([50, 40, 49, 11, 157, 220, 229, 192]);
 

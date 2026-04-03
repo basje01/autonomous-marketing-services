@@ -14,23 +14,25 @@ export function createX402Middleware() {
   const address = getPlatformAddress();
   const priceUsdc = `$${(config.campaignPriceUsdcMicro / 1_000_000).toFixed(2)}`;
 
-  const network = (config.solanaNetwork === "mainnet"
-    ? SOLANA_MAINNET_CAIP2
-    : SOLANA_DEVNET_CAIP2) as `${string}:${string}`;
+  const network = (
+    config.solanaNetwork === "mainnet" ? SOLANA_MAINNET_CAIP2 : SOLANA_DEVNET_CAIP2
+  ) as `${string}:${string}`;
 
-  const routes: Record<string, {
-    accepts: { scheme: "exact"; network: `${string}:${string}`; payTo: string; price: string };
-    description: string;
-  }> = {
+  const routes: Record<
+    string,
+    {
+      accepts: { scheme: "exact"; network: `${string}:${string}`; payTo: string; price: string };
+      description: string;
+    }
+  > = {
     "POST /api/deploy-marketing-team": {
       accepts: { scheme: "exact", network, payTo: address, price: priceUsdc },
-      description: "Deploy an autonomous marketing team (7 AI agents backed by 161 specialist skills)",
+      description:
+        "Deploy an autonomous marketing team (7 AI agents backed by 161 specialist skills)",
     },
   };
 
-  const schemes: SchemeRegistration[] = [
-    { network, server: new ExactSvmScheme() },
-  ];
+  const schemes: SchemeRegistration[] = [{ network, server: new ExactSvmScheme() }];
 
   const facilitatorClient = new HTTPFacilitatorClient({ url: config.x402FacilitatorUrl });
 

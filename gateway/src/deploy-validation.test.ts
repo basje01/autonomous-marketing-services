@@ -27,23 +27,27 @@ describe("validateSupportedDeployRequest", () => {
   });
 
   it("rejects a budget that does not match the charged x402 price", () => {
-    expect(() => validateSupportedDeployRequest({
-      projectName: "SolPay",
-      description: "A payment gateway on Solana",
-      targetAudience: "Crypto merchants",
-      budgetUsdc: 25,
-    })).toThrowError(AppError);
+    expect(() =>
+      validateSupportedDeployRequest({
+        projectName: "SolPay",
+        description: "A payment gateway on Solana",
+        targetAudience: "Crypto merchants",
+        budgetUsdc: 25,
+      }),
+    ).toThrowError(AppError);
   });
 
   it("rejects milestone input until the contract can enforce it", () => {
-    expect(() => validateSupportedDeployRequest({
-      projectName: "SolPay",
-      description: "A payment gateway on Solana",
-      targetAudience: "Crypto merchants",
-      milestones: [
-        { name: "Strategy", amountUsdc: 2.5 },
-        { name: "Launch", amountUsdc: 2.5 },
-      ],
-    })).toThrowError(AppError);
+    expect(() =>
+      validateSupportedDeployRequest({
+        projectName: "SolPay",
+        description: "A payment gateway on Solana",
+        targetAudience: "Crypto merchants",
+        milestones: [
+          { name: "Strategy", amountUsdc: 2.5 },
+          { name: "Launch", amountUsdc: 2.5 },
+        ],
+      }),
+    ).toThrowError(AppError);
   });
 });

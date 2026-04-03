@@ -11,14 +11,22 @@ export const envSchema = z.object({
   SOLANA_NETWORK: z.enum(["devnet", "mainnet"]).default("devnet"),
   SOLANA_RPC_URL: z.string().url().default("https://api.devnet.solana.com"),
   CAMPAIGN_ESCROW_PROGRAM_ID: z.string().default("5Ljn3VEwSQ1PBbsEMuQ6jZr9uWPBpRJ8FLNbqUaSDq7Z"),
-  SOLANA_WALLET_PRIVATE_KEY: z.string().transform((val) => {
-    try {
-      const parsed = JSON.parse(val) as unknown;
-      if (!Array.isArray(parsed) || parsed.length !== 64) return undefined;
-      if (!parsed.every((n) => typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= 255)) return undefined;
-      return parsed as number[];
-    } catch { return undefined; }
-  }).optional(),
+  SOLANA_WALLET_PRIVATE_KEY: z
+    .string()
+    .transform((val) => {
+      try {
+        const parsed = JSON.parse(val) as unknown;
+        if (!Array.isArray(parsed) || parsed.length !== 64) return undefined;
+        if (
+          !parsed.every((n) => typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= 255)
+        )
+          return undefined;
+        return parsed as number[];
+      } catch {
+        return undefined;
+      }
+    })
+    .optional(),
   USDC_MINT: z.string().default("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"),
   KAMINO_PROGRAM_ID: z.string().default("SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh"),
   KAMINO_FARMS_PROGRAM_ID: z.string().default("FarmsPZpWu9i7Kky8tPN37rs2TpmMrAZrC7S7vJa91Hr"),

@@ -6,7 +6,13 @@ import {
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
-import { PublicKey, SystemProgram, SYSVAR_INSTRUCTIONS_PUBKEY, SYSVAR_RENT_PUBKEY, TransactionInstruction } from "@solana/web3.js";
+import {
+  PublicKey,
+  SystemProgram,
+  SYSVAR_INSTRUCTIONS_PUBKEY,
+  SYSVAR_RENT_PUBKEY,
+  TransactionInstruction,
+} from "@solana/web3.js";
 import { AppError } from "./errors.js";
 import { config } from "./config.js";
 import {
@@ -93,11 +99,7 @@ export function deriveCampaignPDA(
   programId: PublicKey,
 ): [PublicKey, number] {
   return PublicKey.findProgramAddressSync(
-    [
-      Buffer.from("campaign"),
-      authorityPubkey.toBuffer(),
-      Buffer.from(campaignId),
-    ],
+    [Buffer.from("campaign"), authorityPubkey.toBuffer(), Buffer.from(campaignId)],
     programId,
   );
 }
@@ -281,8 +283,15 @@ export async function initializeCampaign(params: {
     }
 
     const kaminoUserMetadata = deriveKaminoUserMetadataPda(campaignPda, kaminoProgramId);
-    const kaminoObligation = deriveKaminoVanillaObligationPda(campaignPda, lendingMarket, kaminoProgramId);
-    const kaminoMarketAuthority = deriveKaminoLendingMarketAuthorityPda(lendingMarket, kaminoProgramId);
+    const kaminoObligation = deriveKaminoVanillaObligationPda(
+      campaignPda,
+      lendingMarket,
+      kaminoProgramId,
+    );
+    const kaminoMarketAuthority = deriveKaminoLendingMarketAuthorityPda(
+      lendingMarket,
+      kaminoProgramId,
+    );
     const collateralTokenProgram = await getTokenProgramForMint(reserve.collateralMint);
     ensureSplTokenProgram(collateralTokenProgram, "Kamino collateral mint");
 
@@ -364,8 +373,14 @@ export async function initializeCampaign(params: {
     fundedAmountUsdcMicro: budget.toString(),
     initializeSignature,
     platformBalanceBeforeFundingUsdcMicro: sourceAccount.amount.toString(),
-    platformBalanceAfterFundingUsdcMicro: await readOptionalTokenAccountAmount(sourceUsdcAta, usdcTokenProgram),
-    vaultBalanceAfterFundingUsdcMicro: await readOptionalTokenAccountAmount(vaultAta, usdcTokenProgram),
+    platformBalanceAfterFundingUsdcMicro: await readOptionalTokenAccountAmount(
+      sourceUsdcAta,
+      usdcTokenProgram,
+    ),
+    vaultBalanceAfterFundingUsdcMicro: await readOptionalTokenAccountAmount(
+      vaultAta,
+      usdcTokenProgram,
+    ),
     finalVaultBalanceUsdcMicro: null,
     parkedInKamino: false,
     kamino: kaminoFunding,
@@ -379,7 +394,10 @@ export async function initializeCampaign(params: {
   }
 
   try {
-    const parkingSignature = await sendPlatformTransaction(kaminoParkingInstructions, "escrow park in Kamino");
+    const parkingSignature = await sendPlatformTransaction(
+      kaminoParkingInstructions,
+      "escrow park in Kamino",
+    );
     return {
       ...fundingData,
       finalVaultBalanceUsdcMicro: await readOptionalTokenAccountAmount(vaultAta, usdcTokenProgram),
@@ -442,9 +460,7 @@ export async function submitDeliverable(params: {
  * Complete a campaign and release escrowed USDC.
  * If funds are parked in Kamino, the full collateral position is withdrawn first.
  */
-export async function completeCampaign(params: {
-  campaignId: string;
-}): Promise<string> {
+export async function completeCampaign(params: { campaignId: string }): Promise<string> {
   const platform = getPlatformPublicKey();
   const programId = new PublicKey(config.campaignEscrowProgramId);
   const usdcMint = new PublicKey(config.usdcMint);
@@ -454,7 +470,12 @@ export async function completeCampaign(params: {
   const campaign = await loadCampaignAccount(campaignPda);
 
   const vaultAta = getAssociatedTokenAddressSync(usdcMint, campaignPda, true, usdcTokenProgram);
-  const platformUsdcAta = getAssociatedTokenAddressSync(usdcMint, platform, false, usdcTokenProgram);
+  const platformUsdcAta = getAssociatedTokenAddressSync(
+    usdcMint,
+    platform,
+    false,
+    usdcTokenProgram,
+  );
 
   await maybeWithdrawKaminoPosition({
     campaignPda,
@@ -606,16 +627,22 @@ async function maybeWithdrawKaminoPosition(params: {
 async function loadCampaignAccount(campaignPda: PublicKey): Promise<DecodedCampaignAccount> {
   const accountInfo = await getSolanaConnection().getAccountInfo(campaignPda);
   if (!accountInfo) {
-    throw new AppError(`Campaign ${campaignPda.toBase58()} not found`, 404, "ESCROW_CAMPAIGN_MISSING");
+    throw new AppError(
+      `Campaign ${campaignPda.toBase58()} not found`,
+      404,
+      "ESCROW_CAMPAIGN_MISSING",
+    );
   }
   return decodeCampaignAccount(accountInfo.data);
 }
 
 function isKaminoInitialized(campaign: DecodedCampaignAccount): boolean {
-  return !campaign.kaminoProgram.equals(DEFAULT_PUBLIC_KEY)
-    && !campaign.kaminoLendingMarket.equals(DEFAULT_PUBLIC_KEY)
-    && !campaign.kaminoReserve.equals(DEFAULT_PUBLIC_KEY)
-    && !campaign.kaminoObligation.equals(DEFAULT_PUBLIC_KEY);
+  return (
+    !campaign.kaminoProgram.equals(DEFAULT_PUBLIC_KEY) &&
+    !campaign.kaminoLendingMarket.equals(DEFAULT_PUBLIC_KEY) &&
+    !campaign.kaminoReserve.equals(DEFAULT_PUBLIC_KEY) &&
+    !campaign.kaminoObligation.equals(DEFAULT_PUBLIC_KEY)
+  );
 }
 
 async function getTokenProgramForMint(mint: PublicKey): Promise<PublicKey> {
@@ -623,7 +650,10 @@ async function getTokenProgramForMint(mint: PublicKey): Promise<PublicKey> {
   if (!accountInfo) {
     throw new AppError(`Token mint ${mint.toBase58()} not found`, 500, "TOKEN_MINT_MISSING");
   }
-  if (accountInfo.owner.equals(TOKEN_PROGRAM_ID) || accountInfo.owner.equals(TOKEN_2022_PROGRAM_ID)) {
+  if (
+    accountInfo.owner.equals(TOKEN_PROGRAM_ID) ||
+    accountInfo.owner.equals(TOKEN_2022_PROGRAM_ID)
+  ) {
     return accountInfo.owner;
   }
   throw new AppError(
@@ -641,7 +671,10 @@ async function getOptionalTokenAccount(address: PublicKey, tokenProgram: PublicK
   return getAccount(getSolanaConnection(), address, "confirmed", tokenProgram);
 }
 
-async function readOptionalTokenAccountAmount(address: PublicKey, tokenProgram: PublicKey): Promise<string | null> {
+async function readOptionalTokenAccountAmount(
+  address: PublicKey,
+  tokenProgram: PublicKey,
+): Promise<string | null> {
   try {
     const account = await getOptionalTokenAccount(address, tokenProgram);
     return account?.amount.toString() ?? null;
@@ -795,10 +828,7 @@ function buildParkInKaminoInstruction(params: {
       { pubkey: params.liquidityTokenProgram, isSigner: false, isWritable: false },
       { pubkey: SYSVAR_INSTRUCTIONS_PUBKEY, isSigner: false, isWritable: false },
     ],
-    data: Buffer.concat([
-      PARK_IN_KAMINO_DISCRIMINATOR,
-      encodeU64(params.liquidityAmount),
-    ]),
+    data: Buffer.concat([PARK_IN_KAMINO_DISCRIMINATOR, encodeU64(params.liquidityAmount)]),
   });
 }
 
@@ -836,10 +866,7 @@ function buildWithdrawFromKaminoInstruction(params: {
       { pubkey: params.liquidityTokenProgram, isSigner: false, isWritable: false },
       { pubkey: SYSVAR_INSTRUCTIONS_PUBKEY, isSigner: false, isWritable: false },
     ],
-    data: Buffer.concat([
-      WITHDRAW_FROM_KAMINO_DISCRIMINATOR,
-      encodeU64(params.collateralAmount),
-    ]),
+    data: Buffer.concat([WITHDRAW_FROM_KAMINO_DISCRIMINATOR, encodeU64(params.collateralAmount)]),
   });
 }
 

@@ -49,7 +49,11 @@ function toUsdcMicro(amountUsdc: number, fieldName: string): number {
   }
 
   if (Math.abs(amountUsdc - scaled / USDC_SCALE) > 1e-9) {
-    throw new AppError(`${fieldName} must use at most 6 decimal places`, 400, "INVALID_USDC_AMOUNT");
+    throw new AppError(
+      `${fieldName} must use at most 6 decimal places`,
+      400,
+      "INVALID_USDC_AMOUNT",
+    );
   }
 
   return scaled;

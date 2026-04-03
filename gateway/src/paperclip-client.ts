@@ -1,15 +1,23 @@
 import { z } from "zod";
 import { config } from "./config.js";
-import { createCompanyResponseSchema, createAgentResponseSchema, createIssueResponseSchema } from "./schemas.js";
+import {
+  createCompanyResponseSchema,
+  createAgentResponseSchema,
+  createIssueResponseSchema,
+} from "./schemas.js";
 import { ExternalServiceError } from "./errors.js";
 
 const API = config.paperclipApiUrl;
 
-const companyListSchema = z.array(z.object({
-  id: z.string(),
-  name: z.string(),
-  status: z.string().optional(),
-}).passthrough());
+const companyListSchema = z.array(
+  z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      status: z.string().optional(),
+    })
+    .passthrough(),
+);
 
 /**
  * List all companies (campaigns) from Paperclip.
@@ -32,7 +40,8 @@ export async function createCompany(projectName: string, mission: string) {
     signal: AbortSignal.timeout(30_000),
     body: JSON.stringify({ name: `${projectName} Marketing`, mission }),
   });
-  if (!res.ok) throw new ExternalServiceError("paperclip", `Failed to create company: ${res.statusText}`);
+  if (!res.ok)
+    throw new ExternalServiceError("paperclip", `Failed to create company: ${res.statusText}`);
   return createCompanyResponseSchema.parse(await res.json());
 }
 
@@ -118,7 +127,7 @@ const agentsDir = new URL("../../agents", import.meta.url).pathname;
 const skillsDir = new URL("../../skills", import.meta.url).pathname;
 const intelDir = new URL("../../intel", import.meta.url).pathname;
 
-async function hireOne(companyId: string, role: typeof AGENT_ROLES[number]) {
+async function hireOne(companyId: string, role: (typeof AGENT_ROLES)[number]) {
   const res = await fetch(`${API}/api/companies/${companyId}/agents`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -136,10 +145,14 @@ async function hireOne(companyId: string, role: typeof AGENT_ROLES[number]) {
         maxTurnsPerRun: role.maxTurns,
         timeoutSec: role.timeoutSec,
         args: [
-          "--add-dir", skillsDir,
-          "--add-dir", intelDir,
-          "--permission-mode", "acceptEdits",
-          "--allowedTools", "Read Glob Grep WebSearch WebFetch ToolSearch Bash(curl:*) Bash(npm:*) Bash(npx:*) Bash(git:*)",
+          "--add-dir",
+          skillsDir,
+          "--add-dir",
+          intelDir,
+          "--permission-mode",
+          "acceptEdits",
+          "--allowedTools",
+          "Read Glob Grep WebSearch WebFetch ToolSearch Bash(curl:*) Bash(npm:*) Bash(npx:*) Bash(git:*)",
         ],
       },
     }),
@@ -230,6 +243,7 @@ Include Copilot research citations (project slugs, archive references) in your s
     }),
   });
 
-  if (!res.ok) throw new ExternalServiceError("paperclip", `Failed to create task: ${res.statusText}`);
+  if (!res.ok)
+    throw new ExternalServiceError("paperclip", `Failed to create task: ${res.statusText}`);
   return createIssueResponseSchema.parse(await res.json());
 }

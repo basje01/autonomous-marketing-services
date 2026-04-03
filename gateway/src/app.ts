@@ -27,15 +27,27 @@ export function createApp(): express.Express {
 
   // Security
   app.use(helmet());
-  app.use(cors({
-    origin: config.corsOrigin?.split(",").map((s) => s.trim()) || ["http://localhost:3000"],
-    methods: ["GET", "POST"],
-  }));
+  app.use(
+    cors({
+      origin: config.corsOrigin?.split(",").map((s) => s.trim()) || ["http://localhost:3000"],
+      methods: ["GET", "POST"],
+    }),
+  );
   app.use(express.json({ limit: "10kb" }));
 
   // Rate limiting
-  const deployLimiter = rateLimit({ windowMs: 60_000, max: 5, standardHeaders: true, legacyHeaders: false });
-  const readLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false });
+  const deployLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  const readLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
 
   // x402 payment gate — only on the deploy endpoint, not globally (E23)
   const x402 = createX402Middleware();
@@ -72,57 +84,72 @@ export function createApp(): express.Express {
     res.json({ status: "ok", service: "frontier-marketing-os-gateway" });
   });
 
-  app.post("/api/deploy-marketing-team", deployLimiter, validateDeployRequestInput, serveCachedIdempotencyResponse, x402, async (req, res) => {
-    const idempotencyKey = getIdempotencyKey(req.headers["x-idempotency-key"]);
-    const deployRequest = res.locals.deployRequest as DeployRequest | undefined;
-    if (!deployRequest) {
-      if (idempotencyKey) idempotencyStore.delete(idempotencyKey);
-      res.status(500).json({ error: "Validated deploy request missing", code: "INTERNAL_ERROR" });
-      return;
-    }
+  app.post(
+    "/api/deploy-marketing-team",
+    deployLimiter,
+    validateDeployRequestInput,
+    serveCachedIdempotencyResponse,
+    x402,
+    async (req, res) => {
+      const idempotencyKey = getIdempotencyKey(req.headers["x-idempotency-key"]);
+      const deployRequest = res.locals.deployRequest as DeployRequest | undefined;
+      if (!deployRequest) {
+        if (idempotencyKey) idempotencyStore.delete(idempotencyKey);
+        res.status(500).json({ error: "Validated deploy request missing", code: "INTERNAL_ERROR" });
+        return;
+      }
 
-    try {
-      const result = await deployMarketingTeam(deployRequest, getPlatformAddress());
+      try {
+        const result = await deployMarketingTeam(deployRequest, getPlatformAddress());
 
-      // Cache success (1h TTL, E08: cap size)
-      if (idempotencyKey) {
-        if (idempotencyStore.size >= MAX_IDEMPOTENCY_ENTRIES) {
-          const oldest = idempotencyStore.keys().next().value;
-          if (oldest) idempotencyStore.delete(oldest);
+        // Cache success (1h TTL, E08: cap size)
+        if (idempotencyKey) {
+          if (idempotencyStore.size >= MAX_IDEMPOTENCY_ENTRIES) {
+            const oldest = idempotencyStore.keys().next().value;
+            if (oldest) idempotencyStore.delete(oldest);
+          }
+          idempotencyStore.set(idempotencyKey, {
+            state: "completed",
+            status: 200,
+            body: result,
+            expiresAt: Date.now() + 3_600_000,
+          });
         }
-        idempotencyStore.set(idempotencyKey, {
-          state: "completed",
-          status: 200,
-          body: result,
-          expiresAt: Date.now() + 3_600_000,
-        });
-      }
 
-      res.json(result);
-    } catch (error) {
-      const errorId = crypto.randomUUID();
-      const errorBody = error instanceof AppError
-        ? { error: error.message, code: error.code, errorId }
-        : { error: "Failed to deploy marketing team", code: "INTERNAL_ERROR", errorId, refundStatus: "pending_manual_review" };
-      const status = error instanceof AppError ? error.statusCode : 500;
+        res.json(result);
+      } catch (error) {
+        const errorId = crypto.randomUUID();
+        const errorBody =
+          error instanceof AppError
+            ? { error: error.message, code: error.code, errorId }
+            : {
+                error: "Failed to deploy marketing team",
+                code: "INTERNAL_ERROR",
+                errorId,
+                refundStatus: "pending_manual_review",
+              };
+        const status = error instanceof AppError ? error.statusCode : 500;
 
-      // Cache failures with short TTL to prevent duplicate deploys on retry (E06)
-      if (idempotencyKey) {
-        idempotencyStore.set(idempotencyKey, {
-          state: "completed",
-          status,
-          body: errorBody,
-          expiresAt: Date.now() + 300_000,
-        });
-      }
+        // Cache failures with short TTL to prevent duplicate deploys on retry (E06)
+        if (idempotencyKey) {
+          idempotencyStore.set(idempotencyKey, {
+            state: "completed",
+            status,
+            body: errorBody,
+            expiresAt: Date.now() + 300_000,
+          });
+        }
 
-      if (!(error instanceof AppError)) {
-        console.error(`[gateway] PAYMENT TAKEN BUT DEPLOY FAILED — errorId=${errorId} — MANUAL INTERVENTION REQUIRED`);
+        if (!(error instanceof AppError)) {
+          console.error(
+            `[gateway] PAYMENT TAKEN BUT DEPLOY FAILED — errorId=${errorId} — MANUAL INTERVENTION REQUIRED`,
+          );
+        }
+        console.error(`[gateway] [${errorId}]:`, error instanceof Error ? error.message : error);
+        res.status(status).json(errorBody);
       }
-      console.error(`[gateway] [${errorId}]:`, error instanceof Error ? error.message : error);
-      res.status(status).json(errorBody);
-    }
-  });
+    },
+  );
 
   // E04: Validated campaigns response
   app.get("/api/campaigns", readLimiter, requireApiKey, async (_req, res) => {
@@ -130,7 +157,9 @@ export function createApp(): express.Express {
       const companies = await listCompanies();
       res.json(companies);
     } catch {
-      res.status(502).json({ error: "Failed to reach Paperclip API", code: "EXTERNAL_SERVICE_ERROR" });
+      res
+        .status(502)
+        .json({ error: "Failed to reach Paperclip API", code: "EXTERNAL_SERVICE_ERROR" });
     }
   });
 
@@ -151,7 +180,9 @@ export function createApp(): express.Express {
       }
 
       console.error("[gateway] Failed to read campaign audit trail:", error);
-      res.status(500).json({ error: "Failed to read campaign audit trail", code: "INTERNAL_ERROR" });
+      res
+        .status(500)
+        .json({ error: "Failed to read campaign audit trail", code: "INTERNAL_ERROR" });
     }
   });
 
@@ -204,7 +235,10 @@ export function createApp(): express.Express {
       const format = (req.query.format as string) || "json";
 
       if (!VALID_FORMATS.has(format)) {
-        res.status(400).json({ error: `Invalid format: ${format}. Must be one of: ${[...VALID_FORMATS].join(", ")}`, code: "VALIDATION_ERROR" });
+        res.status(400).json({
+          error: `Invalid format: ${format}. Must be one of: ${[...VALID_FORMATS].join(", ")}`,
+          code: "VALIDATION_ERROR",
+        });
         return;
       }
 
@@ -222,7 +256,11 @@ export function createApp(): express.Express {
       }
 
       res.json({
-        meta: { fetchedAt: new Date().toISOString(), source: "twitterapi.io", tweetCount: tweets.length },
+        meta: {
+          fetchedAt: new Date().toISOString(),
+          source: "twitterapi.io",
+          tweetCount: tweets.length,
+        },
         tweets,
       });
     } catch (error) {
@@ -231,7 +269,9 @@ export function createApp(): express.Express {
         return;
       }
       console.error("[gateway] Twitter account fetch failed:", error);
-      res.status(502).json({ error: "Failed to fetch account tweets", code: "EXTERNAL_SERVICE_ERROR" });
+      res
+        .status(502)
+        .json({ error: "Failed to fetch account tweets", code: "EXTERNAL_SERVICE_ERROR" });
     }
   });
 
@@ -261,18 +301,24 @@ export function createApp(): express.Express {
   });
 
   // Global error handler (M6)
-  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    console.error("[gateway] Unhandled error:", err);
-    if (err instanceof AppError) {
-      res.status(err.statusCode).json({ error: err.message, code: err.code });
-      return;
-    }
-    res.status(500).json({ error: "Internal server error", code: "INTERNAL_ERROR" });
-  });
+  app.use(
+    (err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+      console.error("[gateway] Unhandled error:", err);
+      if (err instanceof AppError) {
+        res.status(err.statusCode).json({ error: err.message, code: err.code });
+        return;
+      }
+      res.status(500).json({ error: "Internal server error", code: "INTERNAL_ERROR" });
+    },
+  );
 
   return app;
 
-  function validateDeployRequestInput(req: express.Request, res: express.Response, next: express.NextFunction) {
+  function validateDeployRequestInput(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) {
     const parsed = deployRequestSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({
@@ -298,7 +344,11 @@ export function createApp(): express.Express {
     next();
   }
 
-  function serveCachedIdempotencyResponse(req: express.Request, res: express.Response, next: express.NextFunction) {
+  function serveCachedIdempotencyResponse(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) {
     const idempotencyKey = getIdempotencyKey(req.headers["x-idempotency-key"]);
     if (!idempotencyKey) {
       next();

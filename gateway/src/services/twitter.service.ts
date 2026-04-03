@@ -40,7 +40,10 @@ export class TwitterClient {
     const raw = await this._fetch(url);
     const parsed = tweetsByIdsResponseSchema.safeParse(raw);
     if (!parsed.success) {
-      throw new ExternalServiceError("twitterapi.io", `Invalid response for tweet IDs: ${parsed.error.message}`);
+      throw new ExternalServiceError(
+        "twitterapi.io",
+        `Invalid response for tweet IDs: ${parsed.error.message}`,
+      );
     }
     return parsed.data.tweets as Tweet[];
   }
@@ -56,7 +59,10 @@ export class TwitterClient {
     const raw = await this._fetch(url);
     const parsed = userTweetsResponseSchema.safeParse(raw);
     if (!parsed.success) {
-      throw new ExternalServiceError("twitterapi.io", `Invalid response for @${username}: ${parsed.error.message}`);
+      throw new ExternalServiceError(
+        "twitterapi.io",
+        `Invalid response for @${username}: ${parsed.error.message}`,
+      );
     }
     return {
       tweets: parsed.data.data.tweets as Tweet[],
@@ -82,9 +88,7 @@ export class TwitterClient {
   }
 
   /** Fetch multiple accounts in parallel with concurrency limit. */
-  async fetchMultipleAccounts(
-    accounts: Account[],
-  ): Promise<Map<string, Tweet[]>> {
+  async fetchMultipleAccounts(accounts: Account[]): Promise<Map<string, Tweet[]>> {
     const results = new Map<string, Tweet[]>();
     // Process in batches of MAX_CONCURRENT
     for (let i = 0; i < accounts.length; i += MAX_CONCURRENT) {
@@ -108,29 +112,20 @@ export class TwitterClient {
   }
 
   /** Extract video info from a tweet. Prefers 832k (360p) for speed. */
-  static extractVideoInfo(
-    tweet: Tweet,
-  ): { videoUrl: string; durationSec: number } | null {
-    const sources = [
-      tweet.extendedEntities,
-      tweet.quoted_tweet?.extendedEntities,
-    ];
+  static extractVideoInfo(tweet: Tweet): { videoUrl: string; durationSec: number } | null {
+    const sources = [tweet.extendedEntities, tweet.quoted_tweet?.extendedEntities];
     for (const ext of sources) {
       if (!ext?.media) continue;
       for (const m of ext.media) {
         if (m.type !== "video" || !m.video_info) continue;
         const durationSec = Math.floor(m.video_info.duration_millis / 1000);
-        const mp4s = m.video_info.variants.filter(
-          (v) => v.content_type === "video/mp4",
-        );
+        const mp4s = m.video_info.variants.filter((v) => v.content_type === "video/mp4");
         if (mp4s.length === 0) continue;
         // Prefer 360p (832k bitrate) for fast downloads
         const target = mp4s.find((v) => v.bitrate === 832000);
         const best =
           target ??
-          mp4s.reduce((a, b) =>
-            (a.bitrate ?? Infinity) < (b.bitrate ?? Infinity) ? a : b,
-          );
+          mp4s.reduce((a, b) => ((a.bitrate ?? Infinity) < (b.bitrate ?? Infinity) ? a : b));
         return { videoUrl: best.url, durationSec };
       }
     }
@@ -153,10 +148,7 @@ export class TwitterClient {
 
         if (res.status === 429) {
           const retryAfter = Number(res.headers.get("retry-after")) || 0;
-          const delay = Math.max(
-            retryAfter * 1000,
-            RETRY_BASE_MS * 2 ** attempt,
-          );
+          const delay = Math.max(retryAfter * 1000, RETRY_BASE_MS * 2 ** attempt);
           console.warn(
             `[twitter] 429 rate-limited, waiting ${delay}ms (attempt ${attempt + 1}/${this.maxRetries + 1})`,
           );
@@ -173,17 +165,14 @@ export class TwitterClient {
 
         return await res.json();
       } catch (err) {
-        lastError =
-          err instanceof Error ? err : new Error(String(err));
+        lastError = err instanceof Error ? err : new Error(String(err));
 
         if (err instanceof ExternalServiceError) throw err;
 
         // Retry on network/timeout errors
         if (attempt < this.maxRetries) {
           const delay = RETRY_BASE_MS * 2 ** attempt;
-          console.warn(
-            `[twitter] Request failed, retrying in ${delay}ms: ${lastError.message}`,
-          );
+          console.warn(`[twitter] Request failed, retrying in ${delay}ms: ${lastError.message}`);
           await sleep(delay);
         }
       } finally {
@@ -207,10 +196,7 @@ function toLlmsTxt(data: {
   accounts: Map<string, Tweet[]>;
   transcriptsDir?: string;
 }): string {
-  const totalTweets = [...data.accounts.values()].reduce(
-    (sum, t) => sum + t.length,
-    0,
-  );
+  const totalTweets = [...data.accounts.values()].reduce((sum, t) => sum + t.length, 0);
   const fetchedAt = new Date().toISOString();
   const accountNames = [...data.accounts.keys()];
 
@@ -241,9 +227,7 @@ function toLlmsTxt(data: {
       if (video) {
         const mins = Math.floor(video.durationSec / 60);
         const secs = video.durationSec % 60;
-        lines.push(
-          `  Video: ${mins}m${secs}s → [transcript](transcripts/${t.id}.md)`,
-        );
+        lines.push(`  Video: ${mins}m${secs}s → [transcript](transcripts/${t.id}.md)`);
       }
       lines.push("");
     }
@@ -261,10 +245,7 @@ function toLlmsTxt(data: {
   return lines.join("\n");
 }
 
-function toJson(data: {
-  date: string;
-  accounts: Map<string, Tweet[]>;
-}): object {
+function toJson(data: { date: string; accounts: Map<string, Tweet[]> }): object {
   const accountEntries: Record<string, { tweets: Tweet[] }> = {};
   let totalTweets = 0;
   for (const [username, tweets] of data.accounts) {

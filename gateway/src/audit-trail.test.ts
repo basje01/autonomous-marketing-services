@@ -23,16 +23,20 @@ describe("audit trail", () => {
       auditDir,
     });
 
-    await appendCampaignAuditEntry("cmp-attested", {
-      actor: "gateway.deploy-service",
-      nodeId: "A",
-      nodeLabel: "Record Deployment Intent",
-      event: "deploy.intent.recorded",
-      status: "succeeded",
-      payload: {
-        projectName: "Kamino Growth Sprint",
+    await appendCampaignAuditEntry(
+      "cmp-attested",
+      {
+        actor: "gateway.deploy-service",
+        nodeId: "A",
+        nodeLabel: "Record Deployment Intent",
+        event: "deploy.intent.recorded",
+        status: "succeeded",
+        payload: {
+          projectName: "Kamino Growth Sprint",
+        },
       },
-    }, auditDir);
+      auditDir,
+    );
 
     const bundle = await readCampaignAuditBundle("cmp-attested", auditDir);
 
@@ -54,14 +58,18 @@ describe("audit trail", () => {
       auditDir,
     });
 
-    await appendCampaignAuditEntry(campaignId, {
-      actor: "gateway.deploy-service",
-      event: "deploy.intent.recorded",
-      status: "succeeded",
-      payload: {
-        ok: true,
+    await appendCampaignAuditEntry(
+      campaignId,
+      {
+        actor: "gateway.deploy-service",
+        event: "deploy.intent.recorded",
+        status: "succeeded",
+        payload: {
+          ok: true,
+        },
       },
-    }, auditDir);
+      auditDir,
+    );
 
     const filePath = path.resolve(auditDir, `${campaignId}.json`);
     const raw = await fs.readFile(filePath, "utf8");
@@ -88,22 +96,30 @@ describe("audit trail", () => {
     });
 
     await Promise.all([
-      appendCampaignAuditEntry(campaignId, {
-        actor: "gateway.paperclip",
-        event: "paperclip.company.created",
-        status: "succeeded",
-        payload: {
-          companyId: "pc_1",
+      appendCampaignAuditEntry(
+        campaignId,
+        {
+          actor: "gateway.paperclip",
+          event: "paperclip.company.created",
+          status: "succeeded",
+          payload: {
+            companyId: "pc_1",
+          },
         },
-      }, auditDir),
-      appendCampaignAuditEntry(campaignId, {
-        actor: "gateway.paperclip",
-        event: "paperclip.agents.hired",
-        status: "succeeded",
-        payload: {
-          agentCount: 4,
+        auditDir,
+      ),
+      appendCampaignAuditEntry(
+        campaignId,
+        {
+          actor: "gateway.paperclip",
+          event: "paperclip.agents.hired",
+          status: "succeeded",
+          payload: {
+            agentCount: 4,
+          },
         },
-      }, auditDir),
+        auditDir,
+      ),
     ]);
 
     const bundle = await readCampaignAuditBundle(campaignId, auditDir);
@@ -127,14 +143,18 @@ describe("audit trail", () => {
       auditDir,
     });
 
-    await appendCampaignAuditEntry(campaignId, {
-      actor: "gateway.deploy-service",
-      event: "deploy.completed",
-      status: "succeeded",
-      payload: {
-        companyId: "pc_complete",
+    await appendCampaignAuditEntry(
+      campaignId,
+      {
+        actor: "gateway.deploy-service",
+        event: "deploy.completed",
+        status: "succeeded",
+        payload: {
+          companyId: "pc_complete",
+        },
       },
-    }, auditDir);
+      auditDir,
+    );
 
     const bundle = await readCampaignAuditBundle(campaignId, auditDir);
     const entry = bundle.trail.entries[0];

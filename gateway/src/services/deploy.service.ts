@@ -88,14 +88,15 @@ export async function deployMarketingTeam(
       campaignId,
       budgetUsdcMicro,
       deliverablesExpected,
-      kamino: kaminoEnabled && kaminoLendingMarket && kaminoUsdcReserve
-        ? {
-            programId: config.kaminoProgramId,
-            farmsProgramId: config.kaminoFarmsProgramId,
-            lendingMarket: kaminoLendingMarket,
-            usdcReserve: kaminoUsdcReserve,
-          }
-        : undefined,
+      kamino:
+        kaminoEnabled && kaminoLendingMarket && kaminoUsdcReserve
+          ? {
+              programId: config.kaminoProgramId,
+              farmsProgramId: config.kaminoFarmsProgramId,
+              lendingMarket: kaminoLendingMarket,
+              usdcReserve: kaminoUsdcReserve,
+            }
+          : undefined,
     });
 
     await appendCampaignAuditEntry(campaignId, {
@@ -179,7 +180,11 @@ export async function deployMarketingTeam(
           expectedStrategist: "Minerva",
         },
       });
-      throw new AppError("Failed to hire Minerva (Marketing Strategist)", 500, "STRATEGIST_MISSING");
+      throw new AppError(
+        "Failed to hire Minerva (Marketing Strategist)",
+        500,
+        "STRATEGIST_MISSING",
+      );
     }
 
     await appendCampaignAuditEntry(campaignId, {

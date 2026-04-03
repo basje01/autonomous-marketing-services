@@ -88,10 +88,12 @@ export type Tweet = z.infer<typeof baseTweetSchema> & {
 export const userTweetsResponseSchema = z.object({
   status: z.string().optional(),
   msg: z.string().optional(),
-  data: z.object({
-    pin_tweet: z.unknown().optional(),
-    tweets: z.array(tweetSchema).default([]),
-  }).default({ tweets: [] }),
+  data: z
+    .object({
+      pin_tweet: z.unknown().optional(),
+      tweets: z.array(tweetSchema).default([]),
+    })
+    .default({ tweets: [] }),
   has_next_page: z.boolean().default(false),
   next_cursor: z.string().optional(),
 });

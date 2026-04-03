@@ -1,5 +1,11 @@
 import { Obligation, Reserve } from "@kamino-finance/klend-sdk";
-import { Connection, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, TransactionInstruction } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+  SYSVAR_RENT_PUBKEY,
+  TransactionInstruction,
+} from "@solana/web3.js";
 import { AppError } from "./errors.js";
 
 const DEFAULT_PUBLIC_KEY = new PublicKey("11111111111111111111111111111111");
@@ -36,7 +42,11 @@ export async function loadKaminoReserveState(
 ): Promise<KaminoReserveState> {
   const accountInfo = await connection.getAccountInfo(reserveAddress);
   if (!accountInfo) {
-    throw new AppError(`Kamino reserve ${reserveAddress.toBase58()} not found`, 500, "KAMINO_RESERVE_MISSING");
+    throw new AppError(
+      `Kamino reserve ${reserveAddress.toBase58()} not found`,
+      500,
+      "KAMINO_RESERVE_MISSING",
+    );
   }
   if (!accountInfo.owner.equals(kaminoProgramId)) {
     throw new AppError(
@@ -97,12 +107,15 @@ export async function obligationHasCollateralDeposit(
   const obligation = Obligation.decode(accountInfo.data);
   return obligation.deposits.some(
     (deposit) =>
-      new PublicKey(deposit.depositReserve).equals(reserveAddress)
-      && !deposit.depositedAmount.isZero(),
+      new PublicKey(deposit.depositReserve).equals(reserveAddress) &&
+      !deposit.depositedAmount.isZero(),
   );
 }
 
-export function deriveKaminoUserMetadataPda(owner: PublicKey, kaminoProgramId: PublicKey): PublicKey {
+export function deriveKaminoUserMetadataPda(
+  owner: PublicKey,
+  kaminoProgramId: PublicKey,
+): PublicKey {
   return PublicKey.findProgramAddressSync(
     [KAMINO_USER_METADATA_SEED, owner.toBuffer()],
     kaminoProgramId,
@@ -158,8 +171,16 @@ export function buildRefreshReserveInstruction(
       { pubkey: reserve.reserveAddress, isSigner: false, isWritable: true },
       { pubkey: reserve.lendingMarket, isSigner: false, isWritable: false },
       { pubkey: reserve.pythOracle ?? kaminoProgramId, isSigner: false, isWritable: false },
-      { pubkey: reserve.switchboardPriceOracle ?? kaminoProgramId, isSigner: false, isWritable: false },
-      { pubkey: reserve.switchboardTwapOracle ?? kaminoProgramId, isSigner: false, isWritable: false },
+      {
+        pubkey: reserve.switchboardPriceOracle ?? kaminoProgramId,
+        isSigner: false,
+        isWritable: false,
+      },
+      {
+        pubkey: reserve.switchboardTwapOracle ?? kaminoProgramId,
+        isSigner: false,
+        isWritable: false,
+      },
       { pubkey: reserve.scopePrices ?? kaminoProgramId, isSigner: false, isWritable: false },
     ],
     data: REFRESH_RESERVE_DISCRIMINATOR,
@@ -192,7 +213,11 @@ export function buildRefreshObligationFarmInstruction(params: {
   kaminoProgramId: PublicKey;
 }): TransactionInstruction {
   if (!params.reserve.collateralFarm) {
-    throw new AppError("Kamino reserve does not have a collateral farm", 500, "KAMINO_FARM_DISABLED");
+    throw new AppError(
+      "Kamino reserve does not have a collateral farm",
+      500,
+      "KAMINO_FARM_DISABLED",
+    );
   }
 
   return new TransactionInstruction({

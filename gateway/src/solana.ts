@@ -34,7 +34,9 @@ export function getPlatformKeypair(): Keypair {
         "SOLANA_WALLET_MISSING",
       );
     } else {
-      console.warn("[solana] WARNING: No wallet key configured; generating ephemeral devnet keypair");
+      console.warn(
+        "[solana] WARNING: No wallet key configured; generating ephemeral devnet keypair",
+      );
       platformKeypair = Keypair.generate();
     }
   }
@@ -50,7 +52,9 @@ export function createComputeBudgetInstruction(units: number): TransactionInstru
   return ComputeBudgetProgram.setComputeUnitLimit({ units });
 }
 
-export function createPriorityFeeInstruction(microLamports: number = DEFAULT_PRIORITY_MICRO_LAMPORTS): TransactionInstruction {
+export function createPriorityFeeInstruction(
+  microLamports: number = DEFAULT_PRIORITY_MICRO_LAMPORTS,
+): TransactionInstruction {
   return ComputeBudgetProgram.setComputeUnitPrice({ microLamports });
 }
 
@@ -64,8 +68,11 @@ export async function sendPlatformTransaction(
   }
 
   // Inject priority fee if not already present
-  const hasPriorityFee = instructions.some((ix) =>
-    ix.programId.equals(ComputeBudgetProgram.programId) && ix.data.length >= 5 && ix.data[0] === 3,
+  const hasPriorityFee = instructions.some(
+    (ix) =>
+      ix.programId.equals(ComputeBudgetProgram.programId) &&
+      ix.data.length >= 5 &&
+      ix.data[0] === 3,
   );
   const finalInstructions = hasPriorityFee
     ? instructions
@@ -93,12 +100,15 @@ export async function sendPlatformTransaction(
       const message = lastError.message;
 
       // Retry on transient errors only
-      const isTransient = message.includes("BlockhashNotFound")
-        || message.includes("block height exceeded")
-        || message.includes("timeout");
+      const isTransient =
+        message.includes("BlockhashNotFound") ||
+        message.includes("block height exceeded") ||
+        message.includes("timeout");
 
       if (isTransient && attempt < MAX_TX_RETRIES) {
-        console.warn(`[solana] ${label}: transient error (attempt ${attempt + 1}/${MAX_TX_RETRIES + 1}), retrying in ${TX_RETRY_DELAY_MS}ms: ${message}`);
+        console.warn(
+          `[solana] ${label}: transient error (attempt ${attempt + 1}/${MAX_TX_RETRIES + 1}), retrying in ${TX_RETRY_DELAY_MS}ms: ${message}`,
+        );
         await new Promise((resolve) => setTimeout(resolve, TX_RETRY_DELAY_MS));
         continue;
       }
