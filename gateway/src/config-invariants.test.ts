@@ -25,7 +25,8 @@ describe("Config Invariants", () => {
     it("CEO exists and uses frontier model", () => {
       const ceo = AGENT_ROLES.find((r) => r.role === "CEO");
       expect(ceo).toBeDefined();
-      expect(ceo!.model).toContain("opus");
+      if (!ceo) return;
+      expect(ceo.model).toContain("opus");
     });
 
     it("exactly one CEO role", () => {
@@ -40,7 +41,9 @@ describe("Config Invariants", () => {
     });
 
     it("CEO timeout >= IC timeout (CEO orchestrates, needs more time)", () => {
-      const ceo = AGENT_ROLES.find((r) => r.role === "CEO")!;
+      const ceo = AGENT_ROLES.find((r) => r.role === "CEO");
+      expect(ceo).toBeDefined();
+      if (!ceo) return;
       const ics = AGENT_ROLES.filter((r) => r.role === "IC");
       for (const ic of ics) {
         expect(ceo.timeoutSec).toBeGreaterThanOrEqual(ic.timeoutSec);
@@ -48,7 +51,9 @@ describe("Config Invariants", () => {
     });
 
     it("CEO maxTurns >= IC maxTurns", () => {
-      const ceo = AGENT_ROLES.find((r) => r.role === "CEO")!;
+      const ceo = AGENT_ROLES.find((r) => r.role === "CEO");
+      expect(ceo).toBeDefined();
+      if (!ceo) return;
       const ics = AGENT_ROLES.filter((r) => r.role === "IC");
       for (const ic of ics) {
         expect(ceo.maxTurns).toBeGreaterThanOrEqual(ic.maxTurns);
