@@ -11,6 +11,9 @@ const MAX_CAMPAIGN_ID: usize = 64;
 /// USDC mint on Solana devnet
 const USDC_MINT: Pubkey = pubkey!("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
 
+/// Kamino Lending program on Solana devnet
+const KAMINO_PROGRAM_ID: Pubkey = pubkey!("SLendK7ySfcEzyaFqy93gDnD3RtrpXJcnRwb6zFHJSh");
+
 #[program]
 pub mod campaign_escrow {
     use super::*;
@@ -232,6 +235,7 @@ pub mod campaign_escrow {
         require!(collateral_amount > 0, EscrowError::InvalidKaminoCollateralAmount);
 
         let campaign = &ctx.accounts.campaign;
+        require!(campaign.status == CampaignStatus::Active, EscrowError::CampaignNotActive);
         let (expected_lending_market_authority, _) = kamino::derive_lending_market_authority_pda(
             &campaign.kamino_lending_market,
             &campaign.kamino_program,
@@ -294,8 +298,8 @@ pub mod campaign_escrow {
         require!(campaign.deliverables_submitted >= campaign.deliverables_expected, EscrowError::DeliverablesIncomplete);
         require!(ctx.accounts.vault.amount >= campaign.budget, EscrowError::VaultBalanceMismatch);
 
-        // Read values before mutable borrow
-        let payout_amount = ctx.accounts.vault.amount;
+        // Pay exactly the budget, not the full vault (yield stays in vault for later collection)
+        let payout_amount = campaign.budget;
         let authority = campaign.authority;
         let campaign_id = campaign.campaign_id.clone();
         let bump = campaign.bump;
@@ -338,8 +342,8 @@ pub mod campaign_escrow {
         require!(campaign.deliverables_submitted == 0, EscrowError::CannotCancelWithDeliverables);
         require!(ctx.accounts.vault.amount >= campaign.budget, EscrowError::VaultBalanceMismatch);
 
-        // Read values before mutable borrow
-        let refund_amount = ctx.accounts.vault.amount;
+        // Refund exactly the budget, not the full vault
+        let refund_amount = campaign.budget;
         let authority = campaign.authority;
         let campaign_id = campaign.campaign_id.clone();
         let bump = campaign.bump;
@@ -396,7 +400,8 @@ pub struct InitializeCampaign<'info> {
 
     #[account(
         mut,
-        constraint = client_token_account.mint == USDC_MINT @ EscrowError::InvalidMint
+        constraint = client_token_account.mint == USDC_MINT @ EscrowError::InvalidMint,
+        constraint = client_token_account.owner == authority.key() @ EscrowError::InvalidTokenAccountOwner,
     )]
     pub client_token_account: Account<'info, TokenAccount>,
 
@@ -425,6 +430,7 @@ pub struct SubmitDeliverable<'info> {
 
 #[derive(Accounts)]
 pub struct InitializeKaminoPosition<'info> {
+    #[account(mut)]
     pub platform: Signer<'info>,
 
     #[account(
@@ -441,7 +447,8 @@ pub struct InitializeKaminoPosition<'info> {
     #[account(mut)]
     pub kamino_obligation: UncheckedAccount<'info>,
 
-    /// CHECK: External Kamino lending program
+    /// CHECK: Validated against hardcoded KAMINO_PROGRAM_ID
+    #[account(constraint = kamino_program.key() == KAMINO_PROGRAM_ID @ EscrowError::InvalidKaminoAccount)]
     pub kamino_program: UncheckedAccount<'info>,
 
     /// CHECK: External Kamino lending market
@@ -564,9 +571,14 @@ pub struct WithdrawFromKamino<'info> {
 pub struct CompleteCampaign<'info> {
     pub platform: Signer<'info>,
 
+    /// CHECK: Receives rent on campaign account close
+    #[account(mut, constraint = rent_receiver.key() == platform.key() @ EscrowError::Unauthorized)]
+    pub rent_receiver: UncheckedAccount<'info>,
+
     #[account(
         mut,
         has_one = platform,
+        close = rent_receiver,
     )]
     pub campaign: Account<'info, Campaign>,
 
@@ -589,11 +601,15 @@ pub struct CompleteCampaign<'info> {
 #[derive(Accounts)]
 pub struct CancelCampaign<'info> {
     #[account(
+        mut,
         constraint = authority.key() == campaign.authority @ EscrowError::Unauthorized
     )]
     pub authority: Signer<'info>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        close = authority,
+    )]
     pub campaign: Account<'info, Campaign>,
 
     #[account(
@@ -605,7 +621,8 @@ pub struct CancelCampaign<'info> {
 
     #[account(
         mut,
-        constraint = client_token_account.mint == USDC_MINT @ EscrowError::InvalidMint
+        constraint = client_token_account.mint == USDC_MINT @ EscrowError::InvalidMint,
+        constraint = client_token_account.owner == authority.key() @ EscrowError::InvalidTokenAccountOwner,
     )]
     pub client_token_account: Account<'info, TokenAccount>,
 
@@ -729,4 +746,6 @@ pub enum EscrowError {
     InvalidKaminoAccount,
     #[msg("Collateral amount must be greater than 0")]
     InvalidKaminoCollateralAmount,
+    #[msg("Token account owner does not match expected authority")]
+    InvalidTokenAccountOwner,
 }

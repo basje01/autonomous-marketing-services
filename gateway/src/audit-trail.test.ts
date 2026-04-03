@@ -137,7 +137,9 @@ describe("audit trail", () => {
     }, auditDir);
 
     const bundle = await readCampaignAuditBundle(campaignId, auditDir);
-    bundle.trail.entries[0]!.hash = "00".repeat(32);
+    const entry = bundle.trail.entries[0];
+    if (!entry) throw new Error("Expected at least one audit entry");
+    entry.hash = "00".repeat(32);
 
     const verification = verifyCampaignAuditTrail(bundle.trail);
 

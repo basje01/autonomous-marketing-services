@@ -296,8 +296,18 @@ async function writeAuditFile(filePath: string, trail: CampaignAuditTrail): Prom
   await fs.rename(tempPath, filePath);
 }
 
+const SAFE_CAMPAIGN_ID_PATTERN = /^[a-zA-Z0-9_-]{1,64}$/;
+
 function getCampaignAuditPath(campaignId: string, auditDir: string): string {
-  return path.resolve(auditDir, `${campaignId}.json`);
+  if (!SAFE_CAMPAIGN_ID_PATTERN.test(campaignId)) {
+    throw new AppError("Invalid campaign ID format", 400, "INVALID_CAMPAIGN_ID");
+  }
+  const resolved = path.resolve(auditDir, `${campaignId}.json`);
+  const normalizedDir = path.resolve(auditDir);
+  if (!resolved.startsWith(normalizedDir)) {
+    throw new AppError("Invalid campaign ID format", 400, "INVALID_CAMPAIGN_ID");
+  }
+  return resolved;
 }
 
 function sha256Hex(value: string): string {

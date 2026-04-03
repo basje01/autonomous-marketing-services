@@ -102,7 +102,16 @@ export function deriveCampaignPDA(
   );
 }
 
+const MIN_CAMPAIGN_ACCOUNT_SIZE = 8 + 32 + 32 + 4 + 0 + 8 + 1 + 1 + 1 + 1 + 32 * 5; // 246 bytes with empty campaign_id
+
 export function decodeCampaignAccount(data: Buffer): DecodedCampaignAccount {
+  if (data.length < MIN_CAMPAIGN_ACCOUNT_SIZE) {
+    throw new AppError(
+      `Campaign account data too short: ${data.length} bytes, expected at least ${MIN_CAMPAIGN_ACCOUNT_SIZE}`,
+      500,
+      "ESCROW_ACCOUNT_INVALID",
+    );
+  }
   if (!data.subarray(0, 8).equals(CAMPAIGN_ACCOUNT_DISCRIMINATOR)) {
     throw new AppError("Invalid campaign account discriminator", 500, "ESCROW_ACCOUNT_INVALID");
   }
@@ -115,6 +124,13 @@ export function decodeCampaignAccount(data: Buffer): DecodedCampaignAccount {
 
   const campaignIdLength = data.readUInt32LE(offset);
   offset += 4;
+  if (campaignIdLength > 64 || offset + campaignIdLength > data.length) {
+    throw new AppError(
+      `Invalid campaign ID length: ${campaignIdLength}`,
+      500,
+      "ESCROW_ACCOUNT_INVALID",
+    );
+  }
   const campaignId = data.subarray(offset, offset + campaignIdLength).toString("utf8");
   offset += campaignIdLength;
 
@@ -302,7 +318,7 @@ export async function initializeCampaign(params: {
           reserve,
           obligation: kaminoObligation,
           obligationFarmUserState: deriveKaminoObligationFarmStatePda(
-            reserve.collateralFarm!,
+            reserve.collateralFarm,
             kaminoObligation,
             kaminoFarmsProgramId,
           ),
@@ -544,7 +560,7 @@ async function maybeWithdrawKaminoPosition(params: {
         reserve,
         obligation: params.campaign.kaminoObligation,
         obligationFarmUserState: deriveKaminoObligationFarmStatePda(
-          reserve.collateralFarm!,
+          reserve.collateralFarm,
           params.campaign.kaminoObligation,
           new PublicKey(config.kaminoFarmsProgramId),
         ),
@@ -838,6 +854,7 @@ function buildCompleteCampaignInstruction(params: {
     programId: params.programId,
     keys: [
       { pubkey: params.platform, isSigner: true, isWritable: false },
+      { pubkey: params.platform, isSigner: false, isWritable: true }, // rent_receiver == platform
       { pubkey: params.campaign, isSigner: false, isWritable: true },
       { pubkey: params.vault, isSigner: false, isWritable: true },
       { pubkey: params.platformTokenAccount, isSigner: false, isWritable: true },
@@ -857,7 +874,7 @@ function buildCancelCampaignInstruction(params: {
   return new TransactionInstruction({
     programId: params.programId,
     keys: [
-      { pubkey: params.authority, isSigner: true, isWritable: false },
+      { pubkey: params.authority, isSigner: true, isWritable: true }, // mut: receives rent on close
       { pubkey: params.campaign, isSigner: false, isWritable: true },
       { pubkey: params.vault, isSigner: false, isWritable: true },
       { pubkey: params.refundTokenAccount, isSigner: false, isWritable: true },

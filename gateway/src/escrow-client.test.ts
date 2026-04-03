@@ -70,8 +70,13 @@ describe("escrow client helpers", () => {
     expect(decoded.kaminoObligation.toBase58()).toBe(obligation.toBase58());
   });
 
-  it("rejects invalid campaign account discriminators", () => {
+  it("rejects undersized campaign account data", () => {
     const invalid = Buffer.alloc(64);
+    expect(() => decodeCampaignAccount(invalid)).toThrow("Campaign account data too short");
+  });
+
+  it("rejects invalid campaign account discriminators", () => {
+    const invalid = Buffer.alloc(300);
     expect(() => decodeCampaignAccount(invalid)).toThrow("Invalid campaign account discriminator");
   });
 });

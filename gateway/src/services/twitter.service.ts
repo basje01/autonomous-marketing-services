@@ -74,7 +74,11 @@ export class TwitterClient {
     if (tweets.length === 0) {
       throw new ExternalServiceError("twitterapi.io", `Tweet not found: ${match[1]}`);
     }
-    return tweets[0]!;
+    const tweet = tweets[0];
+    if (!tweet) {
+      throw new ExternalServiceError("twitterapi.io", `Tweet not found for URL: ${url}`);
+    }
+    return tweet;
   }
 
   /** Fetch multiple accounts in parallel with concurrency limit. */
@@ -198,113 +202,109 @@ export class TwitterClient {
 // Output formatters following the llms.txt spec (H1/blockquote/H2/Optional).
 // Optimized for LLM consumption at scale.
 
-export class LlmsTxtFormatter {
-  /** Format as llms.txt-spec markdown. Primary output format. */
-  static toLlmsTxt(data: {
-    date: string;
-    accounts: Map<string, Tweet[]>;
-    transcriptsDir?: string;
-  }): string {
-    const totalTweets = [...data.accounts.values()].reduce(
-      (sum, t) => sum + t.length,
-      0,
-    );
-    const fetchedAt = new Date().toISOString();
-    const accountNames = [...data.accounts.keys()];
+function toLlmsTxt(data: {
+  date: string;
+  accounts: Map<string, Tweet[]>;
+  transcriptsDir?: string;
+}): string {
+  const totalTweets = [...data.accounts.values()].reduce(
+    (sum, t) => sum + t.length,
+    0,
+  );
+  const fetchedAt = new Date().toISOString();
+  const accountNames = [...data.accounts.keys()];
 
-    const lines: string[] = [
-      `# Twitter Intel — ${data.date}`,
-      "",
-      `> Daily intelligence feed from ${accountNames.length} monitored X/Twitter accounts.`,
-      `> Source: twitterapi.io | Accounts: ${accountNames.length} | Tweets: ${totalTweets} | Fetched: ${fetchedAt}`,
-      "",
-    ];
+  const lines: string[] = [
+    `# Twitter Intel — ${data.date}`,
+    "",
+    `> Daily intelligence feed from ${accountNames.length} monitored X/Twitter accounts.`,
+    `> Source: twitterapi.io | Accounts: ${accountNames.length} | Tweets: ${totalTweets} | Fetched: ${fetchedAt}`,
+    "",
+  ];
 
-    for (const [username, tweets] of data.accounts) {
-      lines.push(`## @${username}`, "");
-      if (tweets.length === 0) {
-        lines.push("No recent tweets found.", "");
-        continue;
-      }
-      for (const t of tweets) {
-        const text = t.text.replace(/\n/g, "\n  ");
-        lines.push(
-          `- [${t.createdAt}](${t.url}): ${text}`,
-          `  Likes: ${formatCount(t.likeCount)} | RT: ${formatCount(t.retweetCount)} | Views: ${formatCount(t.viewCount)} | Replies: ${formatCount(t.replyCount)}`,
-        );
-        if (t.isReply && t.inReplyToUsername) {
-          lines.push(`  Reply to: @${t.inReplyToUsername}`);
-        }
-        const video = TwitterClient.extractVideoInfo(t);
-        if (video) {
-          const mins = Math.floor(video.durationSec / 60);
-          const secs = video.durationSec % 60;
-          lines.push(
-            `  Video: ${mins}m${secs}s → [transcript](transcripts/${t.id}.md)`,
-          );
-        }
-        lines.push("");
-      }
+  for (const [username, tweets] of data.accounts) {
+    lines.push(`## @${username}`, "");
+    if (tweets.length === 0) {
+      lines.push("No recent tweets found.", "");
+      continue;
     }
-
-    lines.push(
-      "## Optional",
-      "",
-      `- [Video transcripts](${data.transcriptsDir ?? "transcripts/"}) — Whisper-transcribed video content from detected media`,
-      `- [Structured JSON](${data.date}.json) — Machine-parseable format with full metadata envelope`,
-      `- [Account registry](accounts.json) — Add/remove monitored accounts`,
-      "",
-    );
-
-    return lines.join("\n");
-  }
-
-  /** Structured JSON with metadata envelope. */
-  static toJson(data: {
-    date: string;
-    accounts: Map<string, Tweet[]>;
-  }): object {
-    const accountEntries: Record<string, { tweets: Tweet[] }> = {};
-    let totalTweets = 0;
-    for (const [username, tweets] of data.accounts) {
-      accountEntries[username] = { tweets };
-      totalTweets += tweets.length;
-    }
-    return {
-      meta: {
-        fetchedAt: new Date().toISOString(),
-        source: "twitterapi.io",
-        date: data.date,
-        accountCount: data.accounts.size,
-        tweetCount: totalTweets,
-      },
-      accounts: accountEntries,
-    };
-  }
-
-  /** Ultra-compact one-line-per-tweet format for LLM context stuffing. */
-  static toCompactContext(tweets: Tweet[]): string {
-    return tweets
-      .map((t) => {
-        const text = t.text.replace(/\n/g, " ").slice(0, 280);
-        const author = t.author?.userName ?? "unknown";
-        return `@${author} [${t.createdAt}] ${text} | ${formatCount(t.likeCount)}L ${formatCount(t.retweetCount)}RT ${formatCount(t.viewCount)}V`;
-      })
-      .join("\n");
-  }
-
-  /** Format video queue lines for bash whisper pipeline (stderr protocol). */
-  static toVideoQueue(tweets: Tweet[]): string {
-    const lines: string[] = [];
     for (const t of tweets) {
+      const text = t.text.replace(/\n/g, "\n  ");
+      lines.push(
+        `- [${t.createdAt}](${t.url}): ${text}`,
+        `  Likes: ${formatCount(t.likeCount)} | RT: ${formatCount(t.retweetCount)} | Views: ${formatCount(t.viewCount)} | Replies: ${formatCount(t.replyCount)}`,
+      );
+      if (t.isReply && t.inReplyToUsername) {
+        lines.push(`  Reply to: @${t.inReplyToUsername}`);
+      }
       const video = TwitterClient.extractVideoInfo(t);
       if (video) {
-        lines.push(`VIDEO|${t.id}|${video.videoUrl}|${video.durationSec}`);
+        const mins = Math.floor(video.durationSec / 60);
+        const secs = video.durationSec % 60;
+        lines.push(
+          `  Video: ${mins}m${secs}s → [transcript](transcripts/${t.id}.md)`,
+        );
       }
+      lines.push("");
     }
-    return lines.join("\n");
   }
+
+  lines.push(
+    "## Optional",
+    "",
+    `- [Video transcripts](${data.transcriptsDir ?? "transcripts/"}) — Whisper-transcribed video content from detected media`,
+    `- [Structured JSON](${data.date}.json) — Machine-parseable format with full metadata envelope`,
+    `- [Account registry](accounts.json) — Add/remove monitored accounts`,
+    "",
+  );
+
+  return lines.join("\n");
 }
+
+function toJson(data: {
+  date: string;
+  accounts: Map<string, Tweet[]>;
+}): object {
+  const accountEntries: Record<string, { tweets: Tweet[] }> = {};
+  let totalTweets = 0;
+  for (const [username, tweets] of data.accounts) {
+    accountEntries[username] = { tweets };
+    totalTweets += tweets.length;
+  }
+  return {
+    meta: {
+      fetchedAt: new Date().toISOString(),
+      source: "twitterapi.io",
+      date: data.date,
+      accountCount: data.accounts.size,
+      tweetCount: totalTweets,
+    },
+    accounts: accountEntries,
+  };
+}
+
+function toCompactContext(tweets: Tweet[]): string {
+  return tweets
+    .map((t) => {
+      const text = t.text.replace(/\n/g, " ").slice(0, 280);
+      const author = t.author?.userName ?? "unknown";
+      return `@${author} [${t.createdAt}] ${text} | ${formatCount(t.likeCount)}L ${formatCount(t.retweetCount)}RT ${formatCount(t.viewCount)}V`;
+    })
+    .join("\n");
+}
+
+function toVideoQueue(tweets: Tweet[]): string {
+  const lines: string[] = [];
+  for (const t of tweets) {
+    const video = TwitterClient.extractVideoInfo(t);
+    if (video) {
+      lines.push(`VIDEO|${t.id}|${video.videoUrl}|${video.durationSec}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+export const LlmsTxtFormatter = { toLlmsTxt, toJson, toCompactContext, toVideoQueue };
 
 // === Helpers ===
 

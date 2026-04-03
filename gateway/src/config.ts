@@ -42,6 +42,9 @@ export const config = {
   // Twitter intel
   twitterApiKey: env.TWITTERAPI_IO_KEY,
 
+  // Auth
+  gatewayApiKey: env.GATEWAY_API_KEY,
+
   // CORS
   corsOrigin: env.CORS_ORIGIN,
 } as const;

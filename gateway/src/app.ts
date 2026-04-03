@@ -16,6 +16,7 @@ import { TwitterClient, LlmsTxtFormatter } from "./services/twitter.service.js";
 
 const MAX_IDEMPOTENCY_ENTRIES = 1000;
 const IDEMPOTENCY_PENDING_TTL_MS = 5 * 60_000;
+const VALID_FORMATS = new Set(["json", "llms-txt", "compact"]);
 
 type IdempotencyEntry =
   | { state: "pending"; expiresAt: number }
@@ -48,6 +49,23 @@ export function createApp(): express.Express {
     }
   }, 5 * 60_000).unref();
 
+  // Lazy singleton Twitter client (L1)
+  let twitterClient: TwitterClient | undefined;
+
+  // Optional API key auth for sensitive endpoints (C7)
+  function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
+    if (!config.gatewayApiKey) {
+      next();
+      return;
+    }
+    const provided = req.headers["x-api-key"];
+    if (provided !== config.gatewayApiKey) {
+      res.status(401).json({ error: "Invalid or missing API key", code: "UNAUTHORIZED" });
+      return;
+    }
+    next();
+  }
+
   // === Routes ===
 
   app.get("/api/health", (_req, res) => {
@@ -58,6 +76,7 @@ export function createApp(): express.Express {
     const idempotencyKey = getIdempotencyKey(req.headers["x-idempotency-key"]);
     const deployRequest = res.locals.deployRequest as DeployRequest | undefined;
     if (!deployRequest) {
+      if (idempotencyKey) idempotencyStore.delete(idempotencyKey);
       res.status(500).json({ error: "Validated deploy request missing", code: "INTERNAL_ERROR" });
       return;
     }
@@ -106,7 +125,7 @@ export function createApp(): express.Express {
   });
 
   // E04: Validated campaigns response
-  app.get("/api/campaigns", readLimiter, async (_req, res) => {
+  app.get("/api/campaigns", readLimiter, requireApiKey, async (_req, res) => {
     try {
       const companies = await listCompanies();
       res.json(companies);
@@ -115,7 +134,7 @@ export function createApp(): express.Express {
     }
   });
 
-  app.get("/api/campaigns/:campaignId/audit", readLimiter, async (req, res) => {
+  app.get("/api/campaigns/:campaignId/audit", readLimiter, requireApiKey, async (req, res) => {
     try {
       const campaignId = req.params.campaignId;
       if (!campaignId) {
@@ -142,13 +161,19 @@ export function createApp(): express.Express {
     if (!config.twitterApiKey) {
       throw new AppError("Twitter API not configured", 501, "TWITTER_NOT_CONFIGURED");
     }
-    return new TwitterClient({ apiKey: config.twitterApiKey });
+    twitterClient ??= new TwitterClient({ apiKey: config.twitterApiKey });
+    return twitterClient;
   }
 
-  app.get("/api/twitter/tweet/:tweetId", readLimiter, async (req, res) => {
+  app.get("/api/twitter/tweet/:tweetId", readLimiter, requireApiKey, async (req, res) => {
     try {
+      const tweetId = req.params.tweetId;
+      if (!tweetId || !/^\d{1,25}$/.test(tweetId)) {
+        res.status(400).json({ error: "Invalid tweet ID", code: "VALIDATION_ERROR" });
+        return;
+      }
       const twitter = getTwitterClient();
-      const tweets = await twitter.fetchTweetsByIds([req.params.tweetId!]);
+      const tweets = await twitter.fetchTweetsByIds([tweetId]);
       if (tweets.length === 0) {
         res.status(404).json({ error: "Tweet not found", code: "NOT_FOUND" });
         return;
@@ -167,15 +192,26 @@ export function createApp(): express.Express {
     }
   });
 
-  app.get("/api/twitter/account/:username/latest", readLimiter, async (req, res) => {
+  app.get("/api/twitter/account/:username/latest", readLimiter, requireApiKey, async (req, res) => {
     try {
+      const username = req.params.username;
+      if (!username || !/^[a-zA-Z0-9_]{1,15}$/.test(username)) {
+        res.status(400).json({ error: "Invalid username", code: "VALIDATION_ERROR" });
+        return;
+      }
       const twitter = getTwitterClient();
-      const { tweets } = await twitter.fetchUserTweets(req.params.username!);
+      const { tweets } = await twitter.fetchUserTweets(username);
       const format = (req.query.format as string) || "json";
+
+      if (!VALID_FORMATS.has(format)) {
+        res.status(400).json({ error: `Invalid format: ${format}. Must be one of: ${[...VALID_FORMATS].join(", ")}`, code: "VALIDATION_ERROR" });
+        return;
+      }
+
       const date = new Date().toISOString().slice(0, 10);
 
       if (format === "llms-txt") {
-        const accounts = new Map([[req.params.username!, tweets]]);
+        const accounts = new Map([[username, tweets]]);
         res.type("text/plain").send(LlmsTxtFormatter.toLlmsTxt({ date, accounts }));
         return;
       }
@@ -199,7 +235,7 @@ export function createApp(): express.Express {
     }
   });
 
-  app.get("/api/twitter/intel/today", readLimiter, async (_req, res) => {
+  app.get("/api/twitter/intel/today", readLimiter, requireApiKey, async (_req, res) => {
     try {
       const date = new Date().toISOString().slice(0, 10);
       const fs = await import("node:fs");
@@ -222,6 +258,16 @@ export function createApp(): express.Express {
       console.error("[gateway] Twitter intel fetch failed:", error);
       res.status(500).json({ error: "Failed to read intel", code: "INTERNAL_ERROR" });
     }
+  });
+
+  // Global error handler (M6)
+  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error("[gateway] Unhandled error:", err);
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message, code: err.code });
+      return;
+    }
+    res.status(500).json({ error: "Internal server error", code: "INTERNAL_ERROR" });
   });
 
   return app;

@@ -216,7 +216,9 @@ export function buildRefreshObligationFarmInstruction(params: {
   });
 }
 
-export function hasKaminoCollateralFarm(reserve: KaminoReserveState): boolean {
+export function hasKaminoCollateralFarm(
+  reserve: KaminoReserveState,
+): reserve is KaminoReserveState & { collateralFarm: PublicKey } {
   return reserve.collateralFarm !== null;
 }
 

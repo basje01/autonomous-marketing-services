@@ -44,10 +44,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: coral-xyz/anchor-action@v0.3
+      - uses: metaDAOproject/setup-anchor@v3
         with:
           anchor-version: "0.31.1"
-          solana-cli-version: stable
+          solana-cli-version: "2.2.21"
 
       - name: Build program
         working-directory: campaign-escrow

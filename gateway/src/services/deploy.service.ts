@@ -46,7 +46,9 @@ export async function deployMarketingTeam(
   const budgetUsdc = supportedPlan.budgetUsdc;
   const budgetUsdcMicro = supportedPlan.budgetUsdcMicro;
   const deliverablesExpected = supportedPlan.deliverablesExpected;
-  const kaminoEnabled = Boolean(config.kaminoLendingMarket && config.kaminoUsdcReserve);
+  const kaminoLendingMarket = config.kaminoLendingMarket;
+  const kaminoUsdcReserve = config.kaminoUsdcReserve;
+  const kaminoEnabled = Boolean(kaminoLendingMarket && kaminoUsdcReserve);
 
   await createCampaignAuditTrail({
     campaignId,
@@ -86,12 +88,12 @@ export async function deployMarketingTeam(
       campaignId,
       budgetUsdcMicro,
       deliverablesExpected,
-      kamino: kaminoEnabled
+      kamino: kaminoEnabled && kaminoLendingMarket && kaminoUsdcReserve
         ? {
             programId: config.kaminoProgramId,
             farmsProgramId: config.kaminoFarmsProgramId,
-            lendingMarket: config.kaminoLendingMarket!,
-            usdcReserve: config.kaminoUsdcReserve!,
+            lendingMarket: kaminoLendingMarket,
+            usdcReserve: kaminoUsdcReserve,
           }
         : undefined,
     });
@@ -245,17 +247,21 @@ export async function deployMarketingTeam(
     };
   } catch (error) {
     if (!(error instanceof AppError && error.code === "STRATEGIST_MISSING")) {
-      await appendCampaignAuditEntry(campaignId, {
-        actor: "gateway.deploy-service",
-        nodeId: "X",
-        nodeLabel: "Terminal: Manual Review",
-        event: "deploy.failed",
-        status: "failed",
-        payload: {
-          message: error instanceof Error ? error.message : String(error),
-          code: error instanceof AppError ? error.code : "INTERNAL_ERROR",
-        },
-      });
+      try {
+        await appendCampaignAuditEntry(campaignId, {
+          actor: "gateway.deploy-service",
+          nodeId: "X",
+          nodeLabel: "Terminal: Manual Review",
+          event: "deploy.failed",
+          status: "failed",
+          payload: {
+            message: error instanceof Error ? error.message : String(error),
+            code: error instanceof AppError ? error.code : "INTERNAL_ERROR",
+          },
+        });
+      } catch (auditError) {
+        console.error("[deploy] Failed to write audit entry for deploy failure:", auditError);
+      }
     }
     throw error;
   }

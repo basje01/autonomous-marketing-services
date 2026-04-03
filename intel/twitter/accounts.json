@@ -11,6 +11,7 @@
     { "username": "n8levine", "tags": ["colosseum", "founder"] },
     { "username": "SolanaFndn", "tags": ["solana", "foundation"] },
     { "username": "toly", "tags": ["solana", "founder", "toly"] },
-    { "username": "solana", "tags": ["solana", "ecosystem"] }
+    { "username": "solana", "tags": ["solana", "ecosystem"] },
+    { "username": "solana_devs", "tags": ["solana", "developer", "anchor", "sdk"] }
   ]
 }
