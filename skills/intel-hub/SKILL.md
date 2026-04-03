@@ -117,11 +117,19 @@ curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
 ## Agent Workflows
 
 ### Argus (Chief of Staff)
-1. Fetch daily digest for `https://colosseum.org`
-2. Parse BRAID briefing for actionable signals
-3. For feed items with `metadata.hasVideo === true` and `videoDurationSec >= 30`: fetch transcript via `GET /api/intel/feed/{id}/transcript`. If `transcript_not_ready`, retry next cycle. Include speaker-labeled quotes in issue body.
-4. For each actionable signal: create a GitHub issue with `intel` label
-5. Send feedback (`up`/`down`) on items used in issues
+1. Fetch latest tweets from tracked categories (last 24h):
+   ```bash
+   curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
+     "https://intel.lemuriaos.ai/api/intel/feed?categories=agentic-marketing,decentralized-ai&type=twitter&limit=30&sort=newest"
+   ```
+2. Scan for actionable signals:
+   - **BREAKING**: releases, deprecations, security issues (e.g. "Anchor v1.0.0 is live")
+   - **FEATURE**: new capabilities to integrate
+   - **PATTERN**: market signals worth noting
+3. For items with `metadata.hasVideo === true` and `videoDurationSec >= 120`: fetch transcript via `GET /api/intel/feed/{id}/transcript`. If `transcript_not_ready`, retry next cycle. Include speaker-labeled quotes in issue body.
+4. Write summary to `intel/latest-digest.md` (overwrite entire file)
+5. For BREAKING/FEATURE: create subtask issues with specific file paths
+6. Send feedback (`up`/`down`) on items that produced issues
 
 ### Minerva (Marketing Strategist)
 1. Before Copilot research, fetch intel feed for the client's URL

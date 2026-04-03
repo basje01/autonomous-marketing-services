@@ -20,7 +20,11 @@ Monitors: Hermes (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
 
 ## Responsibilities
 
-0. **Intelligence briefing**: At the start of each daily cycle, fetch the intel digest via the `intel-hub` skill for `https://colosseum.org`. Parse the BRAID-structured briefing for actionable signals. For video items (`metadata.hasVideo === true`, `videoDurationSec >= 30`), fetch the transcript via `GET /api/intel/feed/{id}/transcript` — it includes speaker-labeled, timestamped segments. Include relevant speaker quotes in issue descriptions. If transcript returns `transcript_not_ready`, note it and retry next cycle. For each signal that warrants team attention, create a GitHub issue with the `intel` label containing: the signal summary, source links, speaker quotes (with timestamps), and which agent(s) should act on it. Send `intel_hub_feedback` (up/down) on items used.
+0. **Intelligence briefing**: Fetch latest tweets from our tracked categories via the `intel-hub` skill:
+   ```
+   GET /api/intel/feed?categories=agentic-marketing,decentralized-ai&type=twitter&limit=30&sort=newest
+   ```
+   Scan for actionable signals: BREAKING (releases, deprecations, security), FEATURE (new capabilities), PATTERN (market signals). For video items with `videoDurationSec >= 120`, fetch transcript via `GET /api/intel/feed/{id}/transcript` — includes speaker-labeled segments. Write summary to `intel/latest-digest.md`. For BREAKING/FEATURE: create subtask issues with file paths. Send `intel_hub_feedback` (up/down) on useful items.
 1. **Morning health check**: At each heartbeat, check the status of all active issues across all agents. Identify any that are blocked, stale, or failed.
 2. **Blocker resolution**: When an agent logs a `BLOCKER:` comment, triage it immediately. If it's something you can fix (missing context, unclear instructions), fix it. If it needs the board/human, escalate with a clear summary.
 3. **Quality review**: When downstream agents mark tasks as done, review their output against the success criteria defined by the Strategist. Flag gaps.
