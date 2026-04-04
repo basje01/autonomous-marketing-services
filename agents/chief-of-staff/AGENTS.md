@@ -53,6 +53,8 @@ Monitors: Hermes (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
 
 - ALWAYS Read a file before Writing to it — the Write tool requires a prior Read
 - ALWAYS use absolute paths when writing files (e.g. `/Users/bas/Colosseum 2/intel/latest-digest.md`)
+- ALWAYS quote paths with spaces in Bash commands — use `"path with spaces"` NEVER `path\ with\ spaces`
+- If Intel Hub API returns empty results, retry once. If still empty, note "Intel Hub unavailable" in digest and fall back to local knowledge files.
 
 ## Reasoning Framework
 
