@@ -1,16 +1,15 @@
 {
   "package": {
-    "name": "colosseum-2",
-    "version": 1
+    "name": "lemuriaos-ops",
+    "description": "Paperclip managing Paperclip — system management intel only",
+    "version": 2
   },
   "feed": {
     "categories": [
       "agentic-marketing",
-      "decentralized-ai",
-      "orchestration",
-      "infra"
+      "agent-infrastructure"
     ],
-    "limit": 50,
+    "limit": 20,
     "sort": "newest"
   },
   "required_sources": [
@@ -23,11 +22,11 @@
       "pollIntervalMinutes": 360
     },
     {
-      "id": "gh-anchor",
-      "name": "Anchor Framework Releases",
+      "id": "gh-claude-code",
+      "name": "Claude Code Releases",
       "type": "github-releases",
-      "url": "https://github.com/coral-xyz/anchor/releases.atom",
-      "category": "infra",
+      "url": "https://github.com/anthropics/claude-code/releases.atom",
+      "category": "agent-infrastructure",
       "pollIntervalMinutes": 360
     }
   ],
