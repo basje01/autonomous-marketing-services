@@ -37,8 +37,11 @@ Monitors: Athena (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
         - `firstSeen` older than `{transcripts.maxRetryDays}` days → remove from `pending` (expired, note in digest as "transcript unavailable").
       - For new video items where transcript is not ready: append to `pending` with fields: `itemId`, `title`, `source`, `durationSec`, `firstSeen` (ISO date), `lastChecked`, `retryCount: 0`.
       - Write the updated backlog back to the same path.
-   6. Write summary to `latest-digest.md` in the intel directory.
-   7. For BREAKING/FEATURE items: create subtask issues with file paths. Send `intel_hub_feedback` (up/down) on useful items.
+   6. Write raw output to `raw/argus/YYYY-MM-DD.md` in the intel directory.
+   7. Compile actionable findings into draft articles in `drafts/` — one article per topic (e.g. `drafts/paperclip-v0.7.0.md`, `drafts/anchor-update.md`). Each draft must have sources cited.
+   8. Write quick summary to `latest-digest.md` in the intel directory (still useful as immediate brain chip).
+   9. For BREAKING/FEATURE items: create subtask issues with file paths. Send `intel_hub_feedback` (up/down) on useful items.
+   10. **Do NOT write to `knowledge/` directly** — Hermes (Quality Gate) reviews drafts and promotes approved content to knowledge/.
 1. **Morning health check**: At each heartbeat, check the status of all active issues across all agents. Identify any that are blocked, stale, or failed.
 2. **Blocker resolution**: When an agent logs a `BLOCKER:` comment, triage it immediately. If it's something you can fix (missing context, unclear instructions), fix it. If it needs the board/human, escalate with a clear summary.
 3. **Quality review**: When downstream agents mark tasks as done, review their output against the success criteria defined by the Strategist. Flag gaps.
