@@ -73,7 +73,7 @@ export const AGENT_ROLES = [
     instructionsFile: "chief-of-staff",
   },
   {
-    name: "Hermes",
+    name: "Athena",
     title: "SEO Specialist",
     role: "IC",
     monthlyBudget: 30,
@@ -225,7 +225,7 @@ Follow your BRAID GRD (GRD 1: Marketing Strategist). Plan first, then execute.
    - Messaging hierarchy
    - Channel plan (SEO, content, social, community)
 3. Create subtasks for each downstream agent:
-   - Hermes (SEO): Technical SEO audit + keyword research
+   - Athena (SEO): Technical SEO audit + keyword research
    - Calliope (Content): Homepage copy + Twitter/X threads
    - Mercury (Social): 4-week content calendar
    - Vesta (Community): FAQ + onboarding playbook

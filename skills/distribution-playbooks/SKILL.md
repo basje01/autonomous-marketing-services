@@ -11,7 +11,7 @@ description: "7 distribution strategies for crypto projects. Executable playbook
 
 ## Strategy 1: MCP Server as Sales Channel
 
-**Agents**: Hermes (technical spec), Calliope (registry listing copy)
+**Agents**: Athena (technical spec), Calliope (registry listing copy)
 **When to recommend**: SaaS/tool products, projects with a clear "question they answer"
 
 ### Playbook
@@ -37,7 +37,7 @@ description: "7 distribution strategies for crypto projects. Executable playbook
 
 ## Strategy 2: Programmatic SEO (10K Pages)
 
-**Agents**: Hermes (SEO architecture + keyword patterns), Calliope (unique content per page)
+**Agents**: Athena (SEO architecture + keyword patterns), Calliope (unique content per page)
 **When to recommend**: Any project — especially directories, comparisons, chain-specific tools
 
 ### Playbook
@@ -102,7 +102,7 @@ description: "7 distribution strategies for crypto projects. Executable playbook
 
 ## Strategy 4: Answer Engine Optimization (AEO)
 
-**Agents**: Hermes (technical SEO + schema markup), Calliope (structured answers)
+**Agents**: Athena (technical SEO + schema markup), Calliope (structured answers)
 **When to recommend**: Any project wanting AI-driven discovery
 
 ### Playbook

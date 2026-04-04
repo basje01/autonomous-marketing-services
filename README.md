@@ -14,7 +14,7 @@ Client → POST /api/deploy-marketing-team
   ↓ 7 agents hired
 
 Minerva (CEO) → researches via Colosseum Copilot → produces strategy
-  ├── Hermes (SEO) → audit + keywords + meta tags
+  ├── Athena (SEO) → audit + keywords + meta tags
   ├── Calliope (Content) → homepage copy + threads + blog
   ├── Mercury (Social) → 4-week calendar + engagement
   ├── Vesta (Community) → FAQ + onboarding + playbook
@@ -126,7 +126,7 @@ List active campaigns. Rate limited (30/min).
 |------|------|-------|-------------|
 | **Minerva** | Marketing Strategist (CEO) | Opus | Research, strategy, delegation |
 | **Argus** | Chief of Staff | Sonnet | Health checks, blocker triage, QA gate |
-| **Hermes** | SEO Specialist | Sonnet | Technical audit, keywords, meta, schema |
+| **Athena** | SEO Specialist | Sonnet | Technical audit, keywords, meta, schema |
 | **Calliope** | Content Creator | Sonnet | Homepage copy, Twitter threads, blog |
 | **Mercury** | Social Campaign Manager | Sonnet | 4-week calendar, engagement strategy |
 | **Vesta** | Community Manager | Sonnet | FAQ, onboarding, engagement playbook |

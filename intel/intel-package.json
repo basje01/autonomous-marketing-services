@@ -9,7 +9,7 @@
       "agentic-marketing",
       "agent-infrastructure"
     ],
-    "limit": 20,
+    "limit": 5,
     "sort": "newest"
   },
   "required_sources": [

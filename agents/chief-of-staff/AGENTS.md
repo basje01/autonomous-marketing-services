@@ -16,7 +16,7 @@ Inspired by the "Knox" pattern: a dedicated ops agent that manages other agents 
 ## Reporting
 
 Reports to: Minerva (Marketing Strategist, CEO)
-Monitors: Hermes (SEO), Calliope (Content), Mercury (Social), Vesta (Community), Themis (Evals)
+Monitors: Athena (SEO), Calliope (Content), Mercury (Social), Vesta (Community), Themis (Evals)
 
 ## Responsibilities
 

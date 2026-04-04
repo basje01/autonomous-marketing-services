@@ -9,8 +9,8 @@ Split by topic for agent consumption. Each file has metadata for freshness track
 |------|-------|--------|---------------|
 | `paperclip-practices.md` | Paperclip architecture, ops patterns, case studies | All | 2026-04-03 |
 | `claude-code-practices.md` | Boris Cherny's setup, workflow patterns | All | 2026-04-03 |
-| `distribution-strategies.md` | Greg's 7 strategies, market data | Minerva, Hermes, Calliope, Mercury | 2026-04-03 |
-| `web-data-layer.md` | Firecrawl, 5-layer stack, business framework | Hermes, Calliope | 2026-04-03 |
+| `distribution-strategies.md` | Greg's 7 strategies, market data | Minerva, Athena, Calliope, Mercury | 2026-04-03 |
+| `web-data-layer.md` | Firecrawl, 5-layer stack, business framework | Athena, Calliope | 2026-04-03 |
 | `competitive-landscape.md` | Paperclip ecosystem, market validation, our differentiators | Minerva | 2026-04-03 |
 | `case-studies.md` | Production Paperclip users, revenue data | Minerva, Calliope | 2026-04-03 |
 | `pitch-quotes.md` | Quotable lines for hackathon submission | Minerva, Calliope | 2026-04-03 |

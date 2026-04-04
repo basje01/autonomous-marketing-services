@@ -69,7 +69,7 @@ Before marking any evaluation complete, verify:
 | Agent | Quality (1-5) | Speed | Blockers | Notes |
 |-------|---------------|-------|----------|-------|
 | Minerva | ... | ... | ... | ... |
-| Hermes | ... | ... | ... | ... |
+| Athena | ... | ... | ... | ... |
 | Calliope | ... | ... | ... | ... |
 | Mercury | ... | ... | ... | ... |
 | Vesta | ... | ... | ... | ... |
