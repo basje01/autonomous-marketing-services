@@ -2,8 +2,13 @@
   "package": {
     "name": "fmo",
     "description": "Solana ecosystem + Colosseum hackathon intel for marketing campaigns",
-    "version": 3,
-    "company": "frontier-marketing-os"
+    "version": 4,
+    "company": "frontier-marketing-os",
+    "owner_agent": "minerva"
+  },
+  "output": {
+    "raw": "raw/fmo/",
+    "drafts": "drafts/fmo/"
   },
   "feed": {
     "categories": ["decentralized-ai"],

@@ -20,4 +20,5 @@ Split by topic for agent consumption. Each file has metadata for freshness track
 - **Append-only**: Never delete, only add or update with new `last-verified` date
 - **Source required**: Every fact must have a source (transcript ID, tweet URL, or document)
 - **Staleness**: Argus checks monthly. If `last-verified` > 30 days → create refresh issue
-- **New entries**: Argus adds from daily digests when intel is durable (not ephemeral)
+- **New entries**: Sourced from drafts in `drafts/ops/` and `drafts/fmo/` (and future package directories), reviewed by Hermes (Quality Gate) before promotion here
+- **Multi-package**: Knowledge is shared across all packages — the brain is unified, inputs are namespaced

@@ -30,5 +30,12 @@ test-ledger/
 launchd.log
 launchd-error.log
 
-# Runtime state (written by Argus)
+# Runtime state (written by agents)
 intel/transcript-backlog.json
+intel/raw/
+intel/drafts/
+intel/briefings/
+intel/latest-digest.md
+intel/daily-digest/
+intel/twitter/
+intel/github/

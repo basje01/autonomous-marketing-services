@@ -22,10 +22,10 @@ Monitors: Athena (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
 
 0. **Intelligence briefing** (via the `intel-hub` skill):
    The intel directory is available as an additional working directory (passed via `--add-dir`). Use it as the base path for all intel files below. For example, if your additional working directory is `/repo/intel`, then `intel-package.json` is at `/repo/intel/intel-package.json`.
-   1. Read `packages/ops.json` from the intel directory.
+   1. Read all `packages/*.json` from the intel directory. Process each package where `owner_agent` is `"argus"` (or unset — default to Argus). Skip packages with a different `owner_agent`.
    2. Build the feed query from the config's `feed` object:
       ```
-      GET /api/intel/feed?categories={feed.categories joined by comma}&limit={feed.limit}&sort={feed.sort}
+      GET /api/intel/feed?categories={feed.categories joined by %2C (URL-encoded comma)}&limit={feed.limit}&sort={feed.sort}
       ```
       Do NOT add a `type` filter — the package intentionally fetches all source types (twitter, github-releases, youtube, rss).
    3. Scan items for actionable signals: BREAKING (releases, deprecations, security), FEATURE (new capabilities), PATTERN (market signals), COMPETITIVE (market positioning).

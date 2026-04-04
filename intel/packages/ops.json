@@ -2,8 +2,13 @@
   "package": {
     "name": "ops",
     "description": "Paperclip managing Paperclip + agentic marketing alpha",
-    "version": 3,
-    "company": "lemuriaos-ops"
+    "version": 4,
+    "company": "lemuriaos-ops",
+    "owner_agent": "argus"
+  },
+  "output": {
+    "raw": "raw/ops/",
+    "drafts": "drafts/ops/"
   },
   "feed": {
     "categories": ["agentic-marketing", "agent-infrastructure"],

@@ -10,7 +10,7 @@
  *   INTEL_API_KEY=xxx pnpm sync-intel -- fmo     # sync single package
  */
 
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
@@ -50,9 +50,24 @@ const targetPackage = process.argv[2];
 let packageFiles: string[];
 
 if (targetPackage && targetPackage !== "all") {
+  const filePath = join(packagesDir, `${targetPackage}.json`);
+  if (!existsSync(filePath)) {
+    console.error(`ERROR: Package '${targetPackage}' not found at ${filePath}`);
+    console.error(
+      `Available packages: ${readdirSync(packagesDir)
+        .filter((f) => f.endsWith(".json"))
+        .map((f) => f.replace(".json", ""))
+        .join(", ")}`,
+    );
+    process.exit(1);
+  }
   packageFiles = [`${targetPackage}.json`];
 } else {
   packageFiles = readdirSync(packagesDir).filter((f) => f.endsWith(".json"));
+  if (packageFiles.length === 0) {
+    console.error(`ERROR: No package files found in ${packagesDir}`);
+    process.exit(1);
+  }
 }
 
 // Fetch existing sources from Intel Hub (once for all packages)
@@ -77,7 +92,19 @@ for (const file of packageFiles) {
   try {
     pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
   } catch {
-    console.error(`ERROR: Could not read ${pkgPath}`);
+    console.error(`ERROR: Could not parse ${pkgPath}`);
+    continue;
+  }
+
+  // Runtime schema validation
+  if (
+    !pkg.package?.name ||
+    !Array.isArray(pkg.required_sources) ||
+    !Array.isArray(pkg.feed?.categories)
+  ) {
+    console.error(
+      `ERROR: Invalid package schema in ${file} — missing package.name, required_sources, or feed.categories`,
+    );
     continue;
   }
 

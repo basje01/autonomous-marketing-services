@@ -136,12 +136,14 @@ curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
 8. Send feedback (`up`/`down`) on items that produced issues
 
 ### Minerva (Marketing Strategist)
-1. Before Copilot research, fetch intel feed for the client's URL
-2. Use top-scored articles as additional competitive context
-3. Cite intel sources alongside Copilot findings
+1. Read `packages/fmo.json` for Solana/crypto ecosystem categories
+2. Fetch intel via REST: `GET /api/intel/feed?categories={from fmo config}&limit={from config}&sort=newest`
+3. Use top-scored articles as additional competitive context
+4. Cite intel sources alongside Copilot findings
 
 ### Any Agent
-- Use `intel_hub_feed` for ad-hoc research on any topic URL
+- **REST API** (`GET /api/intel/feed?categories=...`): Use for category-filtered bulk feeds from a package config
+- **MCP tool** (`intel_hub_feed`): Use for URL-based relevance matching (ad-hoc research on any topic)
 - Always send `intel_hub_feedback` after using articles — it trains the relevance model
 
 ## Intel Packages
@@ -179,6 +181,33 @@ Reads `required_sources` from each package, checks Intel Hub, and POSTs any that
 3. Add new "not ready" items from current feed to pending
 
 Items appear in the digest exactly once — on completion or expiry.
+
+### Adding a New Package
+
+1. Create `intel/packages/{name}.json` with the v4 schema:
+   ```json
+   {
+     "package": { "name": "{name}", "description": "...", "version": 4, "company": "{paperclip-company}", "owner_agent": "{agent-name}" },
+     "output": { "raw": "raw/{name}/", "drafts": "drafts/{name}/" },
+     "feed": { "categories": ["..."], "limit": 10, "sort": "newest" },
+     "required_sources": [],
+     "transcripts": { "minDurationSec": 120, "maxRetryDays": 3 }
+   }
+   ```
+2. Create directories: `intel/raw/{name}/` and `intel/drafts/{name}/`
+3. Register required sources: `INTEL_API_KEY=xxx pnpm sync-intel -- {name}`
+4. Hermes automatically discovers new draft directories — no config needed
+5. Set `limit` based on expected volume: 5 for low-frequency, 10 for moderate, 20 for high
+
+### Conventions
+
+- **File naming**: kebab-case, lowercase (e.g. `paperclip-v0.7.0.md`)
+- **Date format**: ISO 8601 (`YYYY-MM-DD`) in filenames and frontmatter
+- **Package names**: short, lowercase, no spaces (e.g. `ops`, `fmo`, `client-acme`)
+- **Raw files**: `raw/{package}/YYYY-MM-DD.md` — one per day per package
+- **Draft files**: `drafts/{package}/{topic-slug}.md` — one per topic
+- **Knowledge files**: `knowledge/{topic-slug}.md` — shared brain, Hermes-approved only
+- **Briefing files**: `briefings/{agent-name}.md` — one per agent role
 
 ## When API is Unavailable
 
