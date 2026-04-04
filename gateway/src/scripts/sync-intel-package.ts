@@ -39,9 +39,7 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-const packagePath = fileURLToPath(
-  new URL("../../../intel/intel-package.json", import.meta.url),
-);
+const packagePath = fileURLToPath(new URL("../../../intel/intel-package.json", import.meta.url));
 const pkg: IntelPackage = JSON.parse(readFileSync(packagePath, "utf-8"));
 
 console.log(`Intel Package: ${pkg.package.name} v${pkg.package.version}`);
