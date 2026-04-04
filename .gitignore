@@ -29,3 +29,6 @@ test-ledger/
 # Launchd logs
 launchd.log
 launchd-error.log
+
+# Runtime state (written by Argus)
+intel/transcript-backlog.json

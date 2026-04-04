@@ -13,7 +13,8 @@
     "lint:fix": "eslint gateway/src/ --fix",
     "format": "prettier --write 'gateway/src/**/*.ts'",
     "format:check": "prettier --check 'gateway/src/**/*.ts'",
-    "typecheck": "pnpm --filter gateway typecheck"
+    "typecheck": "pnpm --filter gateway typecheck",
+    "sync-intel": "pnpm --filter gateway exec tsx src/scripts/sync-intel-package.ts"
   },
   "keywords": [
     "solana",

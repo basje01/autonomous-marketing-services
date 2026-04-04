@@ -117,19 +117,22 @@ curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
 ## Agent Workflows
 
 ### Argus (Chief of Staff)
-1. Fetch latest tweets from tracked categories (last 24h):
+1. Read `intel/intel-package.json` — the single source of truth for feed categories, limits, and transcript settings. Build the feed query from its `feed` object. Do NOT hardcode query parameters.
+2. Fetch intel from all source types (twitter, github-releases, youtube, rss):
    ```bash
    curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
-     "https://intel.lemuriaos.ai/api/intel/feed?categories=agentic-marketing,decentralized-ai&type=twitter&limit=30&sort=newest"
+     "https://intel.lemuriaos.ai/api/intel/feed?categories={from config}&limit={from config}&sort={from config}"
    ```
-2. Scan for actionable signals:
+3. Scan for actionable signals:
    - **BREAKING**: releases, deprecations, security issues (e.g. "Anchor v1.0.0 is live")
    - **FEATURE**: new capabilities to integrate
    - **PATTERN**: market signals worth noting
-3. For items with `metadata.hasVideo === true` and `videoDurationSec >= 120`: fetch transcript via `GET /api/intel/feed/{id}/transcript`. If `transcript_not_ready`, retry next cycle. Include speaker-labeled quotes in issue body.
-4. Write summary to `intel/latest-digest.md` (overwrite entire file)
-5. For BREAKING/FEATURE: create subtask issues with specific file paths
-6. Send feedback (`up`/`down`) on items that produced issues
+   - **COMPETITIVE**: market positioning signals
+4. For video items with `videoDurationSec >= {transcripts.minDurationSec}`: fetch transcript via `GET /api/intel/feed/{id}/transcript`. If `transcript_not_ready`, add to transcript backlog. Include speaker-labeled quotes in issue body.
+5. Process transcript backlog (`intel/transcript-backlog.json`): re-check pending items, include completed transcripts, expire items older than `transcripts.maxRetryDays` days.
+6. Write summary to `intel/latest-digest.md` (overwrite entire file)
+7. For BREAKING/FEATURE: create subtask issues with specific file paths
+8. Send feedback (`up`/`down`) on items that produced issues
 
 ### Minerva (Marketing Strategist)
 1. Before Copilot research, fetch intel feed for the client's URL
@@ -139,6 +142,29 @@ curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
 ### Any Agent
 - Use `intel_hub_feed` for ad-hoc research on any topic URL
 - Always send `intel_hub_feedback` after using articles — it trains the relevance model
+
+## Intel Package
+
+The intel package (`intel/intel-package.json`) is the single source of truth for what intelligence sources and categories agents should query. Agents MUST read this file and construct their feed queries from its `feed` object — never hardcode query parameters in agent instructions.
+
+### Syncing Sources
+
+Register missing sources in Intel Hub:
+
+```bash
+INTEL_API_KEY=xxx pnpm sync-intel
+```
+
+Reads `required_sources` from the package, checks Intel Hub, and POSTs any that don't exist yet. Validates atom URLs before registering (warns on 404). Idempotent — safe to run repeatedly.
+
+### Transcript Backlog
+
+`intel/transcript-backlog.json` tracks video items whose transcripts are still processing. This file is gitignored (runtime state). If it does not exist on first run, create it with `{ "pending": [] }`. Each Argus run:
+1. Re-check pending items → include completed transcripts in digest (then remove from pending)
+2. Expire items older than `transcripts.maxRetryDays` days (remove from pending)
+3. Add new "not ready" items from current feed to pending
+
+Items appear in the digest exactly once — on completion or expiry.
 
 ## When API is Unavailable
 

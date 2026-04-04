@@ -1,0 +1,38 @@
+{
+  "package": {
+    "name": "colosseum-2",
+    "version": 1
+  },
+  "feed": {
+    "categories": [
+      "agentic-marketing",
+      "decentralized-ai",
+      "orchestration",
+      "infra"
+    ],
+    "limit": 50,
+    "sort": "newest"
+  },
+  "required_sources": [
+    {
+      "id": "gh-paperclip",
+      "name": "Paperclip Releases",
+      "type": "github-releases",
+      "url": "https://github.com/paperclipai/paperclip/releases.atom",
+      "category": "agentic-marketing",
+      "pollIntervalMinutes": 360
+    },
+    {
+      "id": "gh-anchor",
+      "name": "Anchor Framework Releases",
+      "type": "github-releases",
+      "url": "https://github.com/coral-xyz/anchor/releases.atom",
+      "category": "infra",
+      "pollIntervalMinutes": 360
+    }
+  ],
+  "transcripts": {
+    "minDurationSec": 120,
+    "maxRetryDays": 3
+  }
+}

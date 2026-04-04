@@ -20,11 +20,25 @@ Monitors: Hermes (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
 
 ## Responsibilities
 
-0. **Intelligence briefing**: Fetch latest tweets from our tracked categories via the `intel-hub` skill:
-   ```
-   GET /api/intel/feed?categories=agentic-marketing,decentralized-ai&type=twitter&limit=30&sort=newest
-   ```
-   Scan for actionable signals: BREAKING (releases, deprecations, security), FEATURE (new capabilities), PATTERN (market signals). For video items with `videoDurationSec >= 120`, fetch transcript via `GET /api/intel/feed/{id}/transcript` — includes speaker-labeled segments. Write summary to `intel/latest-digest.md`. For BREAKING/FEATURE: create subtask issues with file paths. Send `intel_hub_feedback` (up/down) on useful items.
+0. **Intelligence briefing** (via the `intel-hub` skill):
+   The intel directory is available as an additional working directory (passed via `--add-dir`). Use it as the base path for all intel files below. For example, if your additional working directory is `/repo/intel`, then `intel-package.json` is at `/repo/intel/intel-package.json`.
+   1. Read `intel-package.json` from the intel directory.
+   2. Build the feed query from the config's `feed` object:
+      ```
+      GET /api/intel/feed?categories={feed.categories joined by comma}&limit={feed.limit}&sort={feed.sort}
+      ```
+      Do NOT add a `type` filter — the package intentionally fetches all source types (twitter, github-releases, youtube, rss).
+   3. Scan items for actionable signals: BREAKING (releases, deprecations, security), FEATURE (new capabilities), PATTERN (market signals), COMPETITIVE (market positioning).
+   4. For video items with `videoDurationSec >= {transcripts.minDurationSec}`, fetch transcript via `GET /api/intel/feed/{id}/transcript` — includes speaker-labeled segments. If transcript is not ready, add to the backlog (step 5).
+   5. **Transcript backlog**: Read `transcript-backlog.json` from the intel directory. If the file does not exist, initialize it with `{ "pending": [] }` and create it.
+      - For each item in `pending`: re-check `GET /api/intel/feed/{itemId}/transcript`.
+        - Transcript ready → remove from `pending`, include in today's digest under "Completed Transcripts".
+        - Still processing → increment `retryCount`, update `lastChecked`.
+        - `firstSeen` older than `{transcripts.maxRetryDays}` days → remove from `pending` (expired, note in digest as "transcript unavailable").
+      - For new video items where transcript is not ready: append to `pending` with fields: `itemId`, `title`, `source`, `durationSec`, `firstSeen` (ISO date), `lastChecked`, `retryCount: 0`.
+      - Write the updated backlog back to the same path.
+   6. Write summary to `latest-digest.md` in the intel directory.
+   7. For BREAKING/FEATURE items: create subtask issues with file paths. Send `intel_hub_feedback` (up/down) on useful items.
 1. **Morning health check**: At each heartbeat, check the status of all active issues across all agents. Identify any that are blocked, stale, or failed.
 2. **Blocker resolution**: When an agent logs a `BLOCKER:` comment, triage it immediately. If it's something you can fix (missing context, unclear instructions), fix it. If it needs the board/human, escalate with a clear summary.
 3. **Quality review**: When downstream agents mark tasks as done, review their output against the success criteria defined by the Strategist. Flag gaps.

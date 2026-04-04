@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fileURLToPath } from "node:url";
 import { config } from "./config.js";
 import {
   createCompanyResponseSchema,
@@ -123,10 +124,10 @@ export const AGENT_ROLES = [
   },
 ] as const;
 
-const agentsDir = new URL("../../agents", import.meta.url).pathname;
-const skillsDir = new URL("../../skills", import.meta.url).pathname;
-const intelDir = new URL("../../intel", import.meta.url).pathname;
-const mcpConfig = new URL("../../mcp-servers.json", import.meta.url).pathname;
+const agentsDir = fileURLToPath(new URL("../../agents", import.meta.url));
+const skillsDir = fileURLToPath(new URL("../../skills", import.meta.url));
+const intelDir = fileURLToPath(new URL("../../intel", import.meta.url));
+const mcpConfig = fileURLToPath(new URL("../../mcp-servers.json", import.meta.url));
 
 async function hireOne(companyId: string, role: (typeof AGENT_ROLES)[number]) {
   const res = await fetch(`${API}/api/companies/${companyId}/agents`, {
