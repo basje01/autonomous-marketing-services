@@ -121,8 +121,9 @@ curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
 2. Fetch intel from all source types (twitter, github-releases, youtube, rss):
    ```bash
    curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
-     "https://intel.lemuriaos.ai/api/intel/feed?categories={from config}&limit={from config}&sort={from config}"
+     "https://intel.lemuriaos.ai/api/intel/feed?categories={from config, joined with %2C NOT comma}&limit={from config}&sort={from config}"
    ```
+   **IMPORTANT**: Join categories with `%2C` (URL-encoded comma), NOT raw `,`. Example: `categories=agentic-marketing%2Cdecentralized-ai%2Corchestration%2Cinfra`
 3. Scan for actionable signals:
    - **BREAKING**: releases, deprecations, security issues (e.g. "Anchor v1.0.0 is live")
    - **FEATURE**: new capabilities to integrate
