@@ -22,7 +22,7 @@ Monitors: Athena (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
 
 0. **Intelligence briefing** (via the `intel-hub` skill):
    The intel directory is available as an additional working directory (passed via `--add-dir`). Use it as the base path for all intel files below. For example, if your additional working directory is `/repo/intel`, then `intel-package.json` is at `/repo/intel/intel-package.json`.
-   1. Read `intel-package.json` from the intel directory.
+   1. Read `packages/ops.json` from the intel directory.
    2. Build the feed query from the config's `feed` object:
       ```
       GET /api/intel/feed?categories={feed.categories joined by comma}&limit={feed.limit}&sort={feed.sort}
@@ -37,8 +37,8 @@ Monitors: Athena (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
         - `firstSeen` older than `{transcripts.maxRetryDays}` days → remove from `pending` (expired, note in digest as "transcript unavailable").
       - For new video items where transcript is not ready: append to `pending` with fields: `itemId`, `title`, `source`, `durationSec`, `firstSeen` (ISO date), `lastChecked`, `retryCount: 0`.
       - Write the updated backlog back to the same path.
-   6. Write raw output to `raw/argus/YYYY-MM-DD.md` in the intel directory.
-   7. Compile actionable findings into draft articles in `drafts/` — one article per topic (e.g. `drafts/paperclip-v0.7.0.md`, `drafts/anchor-update.md`). Each draft must have sources cited.
+   6. Write raw output to `raw/ops/YYYY-MM-DD.md` in the intel directory.
+   7. Compile actionable findings into draft articles in `drafts/ops/` — one article per topic (e.g. `drafts/paperclip-v0.7.0.md`, `drafts/anchor-update.md`). Each draft must have sources cited.
    8. Write quick summary to `latest-digest.md` in the intel directory (still useful as immediate brain chip).
    9. For BREAKING/FEATURE items: create subtask issues with file paths. Send `intel_hub_feedback` (up/down) on useful items.
    10. **Do NOT write to `knowledge/` directly** — Hermes (Quality Gate) reviews drafts and promotes approved content to knowledge/.

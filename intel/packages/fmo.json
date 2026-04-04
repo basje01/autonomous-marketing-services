@@ -1,0 +1,27 @@
+{
+  "package": {
+    "name": "fmo",
+    "description": "Solana ecosystem + Colosseum hackathon intel for marketing campaigns",
+    "version": 3,
+    "company": "frontier-marketing-os"
+  },
+  "feed": {
+    "categories": ["decentralized-ai"],
+    "limit": 10,
+    "sort": "newest"
+  },
+  "required_sources": [
+    {
+      "id": "gh-anchor",
+      "name": "Anchor Framework Releases",
+      "type": "github-releases",
+      "url": "https://github.com/coral-xyz/anchor/releases.atom",
+      "category": "decentralized-ai",
+      "pollIntervalMinutes": 360
+    }
+  ],
+  "transcripts": {
+    "minDurationSec": 120,
+    "maxRetryDays": 3
+  }
+}

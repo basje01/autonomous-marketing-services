@@ -18,7 +18,7 @@ Reports to: Board (independent — not managed by any swarm agent)
 
 ## Responsibilities
 
-1. **Review drafts**: Read all articles in `intel/drafts/`. For each article:
+1. **Review drafts**: Read all articles in `intel/drafts/ops/` and `intel/drafts/fmo/`. For each article:
    - Is the information accurate? Are claims sourced?
    - Are there hallucinated connections or unsupported conclusions?
    - Is the content actionable for our agents, or is it noise?

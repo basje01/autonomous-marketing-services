@@ -117,7 +117,7 @@ curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
 ## Agent Workflows
 
 ### Argus (Chief of Staff)
-1. Read `intel/intel-package.json` — the single source of truth for feed categories, limits, and transcript settings. Build the feed query from its `feed` object. Do NOT hardcode query parameters.
+1. Read the intel package for your company (e.g. `intel/packages/ops.json` for LemuriaOS Ops, `intel/packages/fmo.json` for Frontier Marketing OS). Build the feed query from its `feed` object. Do NOT hardcode query parameters.
 2. Fetch intel from all source types (twitter, github-releases, youtube, rss):
    ```bash
    curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
@@ -144,19 +144,32 @@ curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
 - Use `intel_hub_feed` for ad-hoc research on any topic URL
 - Always send `intel_hub_feedback` after using articles — it trains the relevance model
 
-## Intel Package
+## Intel Packages
 
-The intel package (`intel/intel-package.json`) is the single source of truth for what intelligence sources and categories agents should query. Agents MUST read this file and construct their feed queries from its `feed` object — never hardcode query parameters in agent instructions.
+Each Paperclip company has its own intel package in `intel/packages/`:
+
+| Package | File | Company | Categories |
+|---------|------|---------|------------|
+| **ops** | `packages/ops.json` | LemuriaOS Ops | agentic-marketing, agent-infrastructure |
+| **fmo** | `packages/fmo.json` | Frontier Marketing OS | decentralized-ai |
+
+Agents read their company's package and construct feed queries from its `feed` object — never hardcode query parameters.
+
+- **Argus** reads `packages/ops.json` → writes to `raw/ops/`, `drafts/ops/`
+- **Minerva** reads `packages/fmo.json` → uses for campaign research
+- **Hermes** reviews `drafts/ops/` + `drafts/fmo/` → approves to shared `knowledge/`
 
 ### Syncing Sources
 
 Register missing sources in Intel Hub:
 
 ```bash
-INTEL_API_KEY=xxx pnpm sync-intel
+INTEL_API_KEY=xxx pnpm sync-intel           # sync all packages
+INTEL_API_KEY=xxx pnpm sync-intel -- ops    # sync single package
+INTEL_API_KEY=xxx pnpm sync-intel -- fmo    # sync single package
 ```
 
-Reads `required_sources` from the package, checks Intel Hub, and POSTs any that don't exist yet. Validates atom URLs before registering (warns on 404). Idempotent — safe to run repeatedly.
+Reads `required_sources` from each package, checks Intel Hub, and POSTs any that don't exist yet. Validates atom URLs before registering (warns on 404). Idempotent — safe to run repeatedly.
 
 ### Transcript Backlog
 

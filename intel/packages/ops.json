@@ -1,14 +1,12 @@
 {
   "package": {
-    "name": "lemuriaos-ops",
-    "description": "Paperclip managing Paperclip — system management intel only",
-    "version": 2
+    "name": "ops",
+    "description": "Paperclip managing Paperclip + agentic marketing alpha",
+    "version": 3,
+    "company": "lemuriaos-ops"
   },
   "feed": {
-    "categories": [
-      "agentic-marketing",
-      "agent-infrastructure"
-    ],
+    "categories": ["agentic-marketing", "agent-infrastructure"],
     "limit": 5,
     "sort": "newest"
   },

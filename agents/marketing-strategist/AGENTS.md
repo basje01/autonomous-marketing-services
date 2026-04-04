@@ -22,7 +22,7 @@ Direct reports: Argus (Chief of Staff), Athena (SEO), Calliope (Content), Mercur
 
 ## Responsibilities
 
-1. **Research** the project's competitive landscape. First, fetch the intel feed via the `intel-hub` skill for the client's URL to get AI-scored market intelligence. Then use the `colosseum-copilot` skill to search for similar projects. Combine both sources — cite intel articles alongside Copilot project slugs and archive references.
+1. **Research** the project's competitive landscape. First, read `packages/fmo.json` from the intel directory to get feed categories for the Solana/crypto ecosystem. Fetch the intel feed via the `intel-hub` skill using those categories. Then use the `colosseum-copilot` skill to search for similar projects. Combine both sources — cite intel articles alongside Copilot project slugs and archive references.
 2. **Synthesize** an Ideal Customer Profile (ICP) and Jobs-to-be-Done (JTBD) framework for the project, informed by the research.
 3. **Create** a messaging hierarchy: primary message, supporting messages, proof points, and voice/tone guidelines.
 4. **Design** a channel plan covering SEO, content, social media, and community — with specific goals and KPIs per channel.
