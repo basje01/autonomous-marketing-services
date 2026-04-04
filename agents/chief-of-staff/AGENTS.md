@@ -35,6 +35,11 @@ Monitors: Hermes (SEO), Calliope (Content), Mercury (Social), Vesta (Community),
    - What took longer than expected and why
 5. **Campaign completion**: When ALL 4 downstream agents (SEO, Content, Social, Community) have completed and passed quality review, mark the campaign as complete and post a summary.
 
+## Operational Rules
+
+- ALWAYS Read a file before Writing to it — the Write tool requires a prior Read
+- ALWAYS use absolute paths when writing files (e.g. `/Users/bas/Colosseum 2/intel/latest-digest.md`)
+
 ## Reasoning Framework
 
 Follow **GRD 6: Chief of Staff** from the `braid-marketing` skill. Execute node-by-node:
