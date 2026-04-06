@@ -6,6 +6,7 @@ sources:
   - "startupideaspod 9m26s niche ideas (2038001164994965699)"
   - "startupideaspod 3m36s Firecrawl intro (2036602696371970195)"
 agents: [hermes, calliope]
+summary: "Greg's 5-layer agent stack with Firecrawl as the web data layer. Business framework for data-as-a-service niches."
 ---
 
 # Web Data Layer
@@ -17,7 +18,7 @@ agents: [hermes, calliope]
 1. **Agent harness** — Paperclip, Claude Code, Cursor
 2. **Search layer** — Intel Hub, Perplexity MCP, Exa
 3. **Web data layer** — Firecrawl (scrape, crawl, map, search, agent)
-4. **Ops brain** — intel/latest-digest.md, Obsidian
+4. **Ops brain** — intel/knowledge/_log.md, Obsidian
 5. **Outbound/audience** — Mercury + Calliope, Instantly, Apollo
 
 ## Firecrawl Business Framework
@@ -42,3 +43,12 @@ agents: [hermes, calliope]
 - SEMrush acquired for $1.9B — SEO intelligence is a massive market
 - Constellation Software: $75B company from hundreds of vertical software acquisitions
 - "Nobody wants 300 million listings. They want 50 that matter."
+
+## Related
+
+- [distribution-strategies](distribution-strategies.md) — distribution strategies that leverage web data
+- [competitive-landscape](competitive-landscape.md) — 5-layer stack as differentiator
+
+## Backlinks
+
+- [distribution-strategies](distribution-strategies.md)

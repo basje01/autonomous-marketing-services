@@ -35,7 +35,7 @@ intel/transcript-backlog.json
 intel/raw/
 intel/drafts/
 intel/briefings/
-intel/latest-digest.md
+# intel/latest-digest.md — replaced by intel/knowledge/_log.md (tracked)
 intel/daily-digest/
 intel/twitter/
 intel/github/

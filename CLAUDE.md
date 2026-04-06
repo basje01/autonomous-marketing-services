@@ -27,3 +27,13 @@ From the deep 3-perspective audit (2026-04-03, commit `793a12f`):
   - (b) Pass mint as initialization parameter (more flexible, less safe)
   - (c) Separate build targets in CI for devnet/mainnet
 - **Files**: `campaign-escrow/programs/campaign-escrow/src/lib.rs:12`
+
+### D1: Infraxa MCP server as alternative DeFi layer
+- **Severity**: LOW (enhancement opportunity)
+- **Problem**: We integrate Kamino directly via `@kamino-finance/klend-sdk` + CPI. Infraxa (@infraxa, infraxa.ai) offers an MCP server wrapping Kamino lending, Solana perps, and smart money tracking into 40+ agent-callable tools. Could expand DeFi strategy options without writing new CPI code.
+- **Decision needed**: Evaluate Infraxa MCP vs. direct CPI for future DeFi integrations. Options:
+  - (a) Keep direct CPI only — maximum control, escrow program stays the signer
+  - (b) Add Infraxa MCP as an optional gateway-level strategy for non-escrow operations (e.g. yield optimization research, smart money signals)
+  - (c) Hybrid — direct CPI for escrow-controlled funds, Infraxa MCP for auxiliary DeFi intelligence
+- **Source**: https://x.com/infraxa/status/2040965812723544237 (2026-04-06)
+- **Files**: `gateway/src/kamino.ts`, `gateway/src/escrow-client.ts`

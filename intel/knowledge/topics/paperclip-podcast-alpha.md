@@ -1,3 +1,12 @@
+---
+topic: paperclip-podcast-alpha
+last-verified: 2026-04-03
+sources:
+  - "Greg Isenberg x Dotta 46m podcast (2037576893772529693) — 381K views, 5.1K bookmarks"
+agents: all
+summary: "Full analysis of Greg x Dotta podcast — 15 architecture/business/technical insights with implications for our system."
+---
+
 # Paperclip Alpha — Greg Isenberg x Dotta (Creator) Podcast
 
 > Source: https://x.com/startupideaspod/status/2037576893772529693
@@ -124,3 +133,13 @@ By default, the CEO must get board approval to hire new agents. Can be turned of
 > "One-shotting an entire app is fun for 30 minutes, then it falls apart."
 
 > "The future of agentic programming is you download Paperclip and you create the organization that you've actually tested that actually works."
+
+## Related
+
+- [paperclip-practices](paperclip-practices.md) — distilled best practices from this podcast
+- [case-studies](case-studies.md) — production users mentioned in this podcast
+- [competitive-landscape](competitive-landscape.md) — ecosystem data referenced
+
+## Backlinks
+
+- [paperclip-practices](paperclip-practices.md)

@@ -131,7 +131,7 @@ curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
    - **COMPETITIVE**: market positioning signals
 4. For video items with `videoDurationSec >= {transcripts.minDurationSec}`: fetch transcript via `GET /api/intel/feed/{id}/transcript`. If `transcript_not_ready`, add to transcript backlog. Include speaker-labeled quotes in issue body.
 5. Process transcript backlog (`intel/transcript-backlog.json`): re-check pending items, include completed transcripts, expire items older than `transcripts.maxRetryDays` days.
-6. Write summary to `intel/latest-digest.md` (overwrite entire file)
+6. Write summary to `intel/knowledge/_log.md` (overwrite entire file)
 7. For BREAKING/FEATURE: create subtask issues with specific file paths
 8. Send feedback (`up`/`down`) on items that produced issues
 
@@ -146,6 +146,36 @@ curl -s -H "Authorization: Bearer $INTEL_API_KEY" \
 - **MCP tool** (`intel_hub_feed`): Use for URL-based relevance matching (ad-hoc research on any topic)
 - Always send `intel_hub_feedback` after using articles — it trains the relevance model
 
+### Filing Research Back
+
+After using Intel Hub for research that produces actionable findings, **file the synthesis back into the wiki** via the `wiki-file` skill. Write to `intel/knowledge/explorations/YYYY-MM-DD-{slug}.md` with the question, sources, and key findings. This ensures agent queries "add up" — the knowledge base grows with every research session, not just from daily ingestion.
+
+Search the wiki first (`wiki-search` skill) to avoid duplicating existing knowledge.
+
+### Source Discovery
+
+Two MCP tools for autonomous source management:
+
+**`intel_source_suggestions`** — View pending source proposals from the weekly discovery cycle:
+```bash
+curl -s -X POST https://intel.lemuriaos.ai/api/intel/mcp \
+  -H "Authorization: Bearer $INTEL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"tool":"intel_source_suggestions","input":{"status":"pending","limit":10}}'
+```
+Returns: `{ ok, items: [{ entityName, entityType, mentionCount, distinctSources, confidence, reasoning }] }`
+
+**`intel_propose_source`** — Propose a new source when you notice a frequently-mentioned entity that isn't tracked:
+```bash
+curl -s -X POST https://intel.lemuriaos.ai/api/intel/mcp \
+  -H "Authorization: Bearer $INTEL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"tool":"intel_propose_source","input":{"entity_name":"Andrej Karpathy","entity_type":"person","suggested_url":"https://twitter.com/karpathy","source_type":"twitter","category":"agent-infrastructure","reasoning":"Mentioned 8 times this week in high-impact items"}}'
+```
+Returns: `{ ok, proposed: true, id, entityName }` or `{ ok, alreadyTracked: true, existingSource }` if already tracked.
+
+**REST endpoint** also available at `GET/POST /api/intel/sources/suggestions` for direct access (approve/reject workflows).
+
 ## Intel Packages
 
 Each Paperclip company has its own intel package in `intel/packages/`:
@@ -159,7 +189,7 @@ Agents read their company's package and construct feed queries from its `feed` o
 
 - **Argus** reads `packages/ops.json` → writes to `raw/ops/`, `drafts/ops/`
 - **Minerva** reads `packages/fmo.json` → uses for campaign research
-- **Hermes** reviews `drafts/ops/` + `drafts/fmo/` → approves to shared `knowledge/`
+- **Hermes** reviews `drafts/ops/` + `drafts/fmo/` → compiles approved content into `knowledge/topics/`, extracts concepts to `knowledge/concepts/`, tracks projects in `knowledge/projects/`
 
 ### Syncing Sources
 
@@ -206,7 +236,10 @@ Items appear in the digest exactly once — on completion or expiry.
 - **Package names**: short, lowercase, no spaces (e.g. `ops`, `fmo`, `client-acme`)
 - **Raw files**: `raw/{package}/YYYY-MM-DD.md` — one per day per package
 - **Draft files**: `drafts/{package}/{topic-slug}.md` — one per topic
-- **Knowledge files**: `knowledge/{topic-slug}.md` — shared brain, Hermes-approved only
+- **Knowledge files**: `knowledge/topics/{topic-slug}.md` — shared brain, Hermes-approved only
+- **Concept files**: `knowledge/concepts/{concept-slug}.md` — atomic concepts, Hermes-compiled
+- **Project files**: `knowledge/projects/{project-slug}.md` — per-project tracking, Hermes-compiled
+- **Exploration files**: `knowledge/explorations/YYYY-MM-DD-{slug}.md` — filed Q&A results via `wiki-file` skill
 - **Briefing files**: `briefings/{agent-name}.md` — one per agent role
 
 ## When API is Unavailable

@@ -31,6 +31,22 @@
       "url": "https://github.com/anthropics/claude-code/releases.atom",
       "category": "agent-infrastructure",
       "pollIntervalMinutes": 360
+    },
+    {
+      "id": "gh-karpathy",
+      "name": "Andrej Karpathy (GitHub Activity)",
+      "type": "rss",
+      "url": "https://github.com/karpathy.atom",
+      "category": "agent-infrastructure",
+      "pollIntervalMinutes": 360
+    },
+    {
+      "id": "gist-karpathy",
+      "name": "Andrej Karpathy (Gists / Idea Files)",
+      "type": "rss",
+      "url": "https://gist.github.com/karpathy.atom",
+      "category": "agent-infrastructure",
+      "pollIntervalMinutes": 360
     }
   ],
   "transcripts": {

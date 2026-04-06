@@ -6,6 +6,7 @@ sources:
   - "Cathryn Lavery 12m demo (2036155705355362618)"
   - "startupideaspod clips (2037576893772529693, 2037275797543936307)"
 agents: all
+summary: "Architecture and operational patterns for Paperclip agent systems — Memento pattern, Board>CEO>ICs hierarchy, heartbeat best practices, compound engineering."
 ---
 
 # Paperclip Best Practices
@@ -40,3 +41,14 @@ agents: all
 - "Wild West" — malicious instructions in community skills
 - Always check security scan badges on skills.sh
 - "Whenever you do something repeatedly, tell your agent to turn it into a skill"
+
+## Related
+
+- [claude-code-practices](claude-code-practices.md) — complementary workflow patterns
+- [case-studies](case-studies.md) — production users applying these patterns
+- [competitive-landscape](competitive-landscape.md) — Paperclip ecosystem data
+- [paperclip-podcast-alpha](paperclip-podcast-alpha.md) — full podcast source material
+
+## Backlinks
+
+- [paperclip-podcast-alpha](paperclip-podcast-alpha.md)

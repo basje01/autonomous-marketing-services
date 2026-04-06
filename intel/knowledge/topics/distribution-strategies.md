@@ -4,6 +4,7 @@ last-verified: 2026-04-03
 sources:
   - "Greg Isenberg 27m18s podcast (2038706332119797894)"
 agents: [minerva, hermes, calliope, mercury]
+summary: "Greg Isenberg's 7 distribution strategies for AI-era startups — MCP servers, programmatic SEO, AEO, viral artifacts, newsletter acquisition, content repurposing."
 note: "Full playbooks also encoded in skills/distribution-playbooks/SKILL.md"
 ---
 
@@ -27,3 +28,13 @@ note: "Full playbooks also encoded in skills/distribution-playbooks/SKILL.md"
 - Peter Levels: $3M+ revenue, zero employees, 750K+ followers + great SEO
 - "The wealthiest people will be marketers over the next 10 years"
 - Distribution first, product second, always
+
+## Related
+
+- [competitive-landscape](competitive-landscape.md) — market validation data
+- [web-data-layer](web-data-layer.md) — Firecrawl as distribution enabler
+- [pitch-quotes](pitch-quotes.md) — quotable distribution lines
+
+## Backlinks
+
+_None yet._

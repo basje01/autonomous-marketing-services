@@ -6,6 +6,7 @@ sources:
   - "startupideaspod 7m13s roofing (2037576893772529693)"
   - "Greg+dotta podcast (2037262467684864075)"
 agents: [minerva, calliope]
+summary: "Production Paperclip users — Cathryn Lavery ($55M e-commerce), Francisco (dentist, $180/mo), roofing company, security firm, Sparkwave enterprise."
 ---
 
 # Production Case Studies
@@ -44,3 +45,14 @@ agents: [minerva, calliope]
 
 - Using 6 OpenClaw agents coordinated through Paperclip
 - Enterprise use case
+
+## Related
+
+- [paperclip-practices](paperclip-practices.md) — patterns these users follow
+- [competitive-landscape](competitive-landscape.md) — ecosystem context
+- [pitch-quotes](pitch-quotes.md) — quotable lines from these cases
+
+## Backlinks
+
+- [paperclip-practices](paperclip-practices.md)
+- [competitive-landscape](competitive-landscape.md)

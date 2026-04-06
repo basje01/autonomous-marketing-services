@@ -3,6 +3,7 @@ topic: pitch-quotes
 last-verified: 2026-04-03
 sources: various transcripts
 agents: [minerva, calliope]
+summary: "Curated quotable lines organized by pitch section — problem framing, solution validation, market opportunity, and our proof points."
 ---
 
 # Quotable for Pitch Deck
@@ -46,3 +47,14 @@ agents: [minerva, calliope]
 | 349+ intel sources, 21K+ items, daily brain chip pre-loads agents | Intel Hub health check |
 | 112 skill files encode domain expertise | skills/ directory |
 | On-chain escrow with proof-of-delivery | Anchor program (campaign-escrow) |
+
+## Related
+
+- [case-studies](case-studies.md) — full context behind the quotes
+- [competitive-landscape](competitive-landscape.md) — market data backing claims
+- [distribution-strategies](distribution-strategies.md) — distribution quotes source
+
+## Backlinks
+
+- [claude-code-practices](claude-code-practices.md)
+- [distribution-strategies](distribution-strategies.md)

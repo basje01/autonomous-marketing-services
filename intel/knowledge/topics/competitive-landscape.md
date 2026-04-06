@@ -6,6 +6,7 @@ sources:
   - "Twitter intel (11 accounts)"
   - "Greg+dotta podcast (2037262467684864075)"
 agents: [minerva]
+summary: "Paperclip ecosystem stats (40K+ stars, 7.8% market share), market validation quotes from Sequoia/a16z, and our 6 key differentiators."
 refresh: monthly
 ---
 
@@ -35,3 +36,15 @@ refresh: monthly
 - **On-chain escrow**: Anchor program with proof-of-delivery
 - **Intel pipeline**: 349+ sources via Intel Hub, daily brain chip
 - **5-layer stack complete**: Paperclip + Intel Hub + Firecrawl + daily digest + outbound agents
+
+## Related
+
+- [paperclip-practices](paperclip-practices.md) — architecture patterns behind the ecosystem
+- [case-studies](case-studies.md) — production proof points
+- [distribution-strategies](distribution-strategies.md) — distribution as moat thesis
+- [web-data-layer](web-data-layer.md) — 5-layer stack detail
+
+## Backlinks
+
+- [paperclip-practices](paperclip-practices.md)
+- [distribution-strategies](distribution-strategies.md)
